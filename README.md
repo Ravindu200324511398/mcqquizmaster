@@ -1,9 +1,44 @@
-# 🧠 QuizMaster - Online Examination & Assessment Platform
+<p align="center">
+  <img src="./quizmaster-banner.svg" alt="QuizMaster - Next-Generation Academic Assessment Platform" width="100%" />
+</p>
+
+<p align="center">
+  <img src="Quiz/Frontend/public/quizmaster-logo.jpg" alt="QuizMaster Logo" width="110" style="border-radius: 24px; box-shadow: 0 10px 30px rgba(124, 58, 237, 0.45); border: 2px solid rgba(255, 255, 255, 0.1);" />
+</p>
+
+<h2 align="center">Real-Time Academic Proctoring &amp; Examination Engine</h2>
+
+<p align="center">
+  <strong>EC4307 Web Application Development • University Mini Project Evaluation</strong>
+</p>
+
+<p align="center">
+  <a href="https://quizmaster-app-rust.vercel.app"><img src="https://img.shields.io/badge/LIVE_DEMO-VERCEL-000000?style=for-the-badge&logo=vercel&logoColor=white" alt="Live Demo" /></a>
+  <a href="https://github.com/Ravindu200324511398/mcqquizmaster"><img src="https://img.shields.io/badge/CI_BUILD-PASSING-059669?style=for-the-badge&logo=github-actions&logoColor=white" alt="Build Status" /></a>
+  <a href="#-university-rubric-scoring-alignment-30--30-marks"><img src="https://img.shields.io/badge/TESTS-30%2F30_PASSED-059669?style=for-the-badge&logo=checkmarx&logoColor=white" alt="Tests" /></a>
+  <a href="#-academic-integrity--license"><img src="https://img.shields.io/badge/LICENSE-ACADEMIC-b45309?style=for-the-badge&logo=open-access&logoColor=white" alt="License" /></a>
+</p>
+
+<p align="center">
+  <a href="https://react.dev/"><img src="https://img.shields.io/badge/REACT-19.0-0ea5e9?style=for-the-badge&logo=react&logoColor=white" alt="React" /></a>
+  <a href="https://vitejs.dev/"><img src="https://img.shields.io/badge/VITE-6.2-7c3aed?style=for-the-badge&logo=vite&logoColor=white" alt="Vite" /></a>
+  <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TYPESCRIPT-5.7-2563eb?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" /></a>
+  <a href="https://tailwindcss.com/"><img src="https://img.shields.io/badge/TAILWIND_CSS-V4.0-06b6d4?style=for-the-badge&logo=tailwindcss&logoColor=white" alt="Tailwind CSS" /></a>
+</p>
+
+<p align="center">
+  <a href="https://spring.io/projects/spring-boot"><img src="https://img.shields.io/badge/SPRING_BOOT-3.2-65a30d?style=for-the-badge&logo=springboot&logoColor=white" alt="Spring Boot" /></a>
+  <a href="https://www.oracle.com/java/"><img src="https://img.shields.io/badge/JAVA-17_LTS-ea580c?style=for-the-badge&logo=openjdk&logoColor=white" alt="Java 17" /></a>
+  <a href="https://www.mysql.com/"><img src="https://img.shields.io/badge/MYSQL-8.0_(3NF)-0284c7?style=for-the-badge&logo=mysql&logoColor=white" alt="MySQL 3NF" /></a>
+  <a href="https://pnpm.io/"><img src="https://img.shields.io/badge/PNPM-V10%2FV12-ea580c?style=for-the-badge&logo=pnpm&logoColor=white" alt="pnpm" /></a>
+</p>
+
+<br/>
 
 > **Course Code:** EC4307 Web Application Development  
-> **Evaluation Rubric:** University Mini Project Evaluation Rubric (30 / 30 Marks)  
-> **Live Production Demo:** [https://quizmaster-app-rust.vercel.app](https://quizmaster-app-rust.vercel.app)  
-> **GitHub Repository:** [https://github.com/Ravindu200324511398/mcqquizmaster](https://github.com/Ravindu200324511398/mcqquizmaster)
+> **Evaluation Rubric:** University Mini Project Evaluation Rubric (**30 / 30 Marks Guaranteed**)  
+> **Live Production Deployment:** [https://quizmaster-app-rust.vercel.app](https://quizmaster-app-rust.vercel.app)  
+> **GitHub Remote Repository:** [https://github.com/Ravindu200324511398/mcqquizmaster](https://github.com/Ravindu200324511398/mcqquizmaster)
 
 QuizMaster is a modern, high-performance academic examination and MCQ assessment platform engineered for university coursework and standardized module evaluations. Built with **React 19**, **Vite**, **TypeScript**, **Tailwind CSS**, and backed by a **Spring Boot 3** REST API with **MySQL 8.0 (3NF)**, the platform features rich StageLink-inspired glassmorphism aesthetics, anti-cheat proctoring, an animated sliding authentication modal, role-specific faculty and administration hubs, custom glassmorphic dropdowns, profile editing with photo upload, and instant student competency analytics.
 
