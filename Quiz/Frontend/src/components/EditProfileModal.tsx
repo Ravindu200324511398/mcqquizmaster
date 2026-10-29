@@ -285,26 +285,6 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
             </div>
           </div>
 
-          {/* 2-Factor Authentication (2FA) Security Status */}
-          <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/25 flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-300 flex items-center justify-center shrink-0">
-                <Icon.Shield className="w-4 h-4" />
-              </div>
-              <div>
-                <div className="text-xs font-semibold text-emerald-200">
-                  Two-Factor Authentication (2FA)
-                </div>
-                <div className="text-[11px] text-emerald-400/80 font-sans">
-                  Active • OTP verification secured with credential pairing
-                </div>
-              </div>
-            </div>
-            <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-              Enabled
-            </span>
-          </div>
-
           {/* Department / Faculty */}
           <div>
             <label className="block text-xs font-mono font-medium text-slate-300 mb-1">
