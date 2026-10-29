@@ -369,6 +369,7 @@ export default function App() {
       {detailsModalQuiz && (
         <QuizDetailsModal
           quiz={detailsModalQuiz}
+          currentUser={currentUser}
           onClose={() => setDetailsModalQuiz(null)}
           onProceed={handleProceedToExam}
         />

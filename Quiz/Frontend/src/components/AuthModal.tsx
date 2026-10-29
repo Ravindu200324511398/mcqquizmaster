@@ -403,32 +403,51 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
                 <div>
                   <div className="flex items-center justify-between mb-1">
-                    <label className="block text-[11px] font-mono text-slate-400">
-                      {signupRole === 'student' ? 'STUDENT ID *' : 'STAFF ID *'}
-                    </label>
+                    <div className="flex items-center gap-1.5">
+                      <label className="block text-[11px] font-mono text-slate-400 font-medium">
+                        {signupRole === 'student' ? 'STUDENT ID' : 'STAFF ID'}
+                      </label>
+                      <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-violet-500/20 text-violet-300 border border-violet-500/30 font-semibold">
+                        🔒 READ-ONLY
+                      </span>
+                    </div>
                     <button
                       type="button"
                       onClick={() => setSignupIdentifier(generateIdForRole(signupRole))}
-                      className="text-[10px] font-mono text-violet-400 hover:text-violet-300 transition-colors"
+                      className="text-[10px] font-mono text-violet-400 hover:text-violet-300 transition-colors flex items-center gap-1 px-1.5 py-0.5 rounded bg-violet-500/10 border border-violet-500/20 hover:bg-violet-500/20"
                       title="Auto-generate a new ID"
                     >
-                      🎲 New ID
+                      <span>🎲</span>
+                      <span>New ID</span>
                     </button>
                   </div>
-                  <input
-                    type="text"
-                    required
-                    value={signupIdentifier}
-                    onChange={e => setSignupIdentifier(e.target.value)}
-                    placeholder="e.g. EG/2024/4499"
-                    className="w-full bg-slate-900/80 border border-violet-500/40 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-violet-400 font-mono font-semibold"
-                  />
+                  <div className="relative">
+                    <input
+                      type="text"
+                      readOnly
+                      required
+                      value={signupIdentifier}
+                      aria-readonly="true"
+                      onKeyDown={e => {
+                        // Prevent manual editing while allowing copy (Cmd/Ctrl + C)
+                        if (!(e.metaKey || e.ctrlKey)) {
+                          e.preventDefault();
+                        }
+                      }}
+                      className="w-full bg-slate-900/90 border border-violet-500/40 rounded-xl pl-3 pr-24 py-2 text-xs text-violet-300 font-mono font-bold cursor-not-allowed select-all focus:outline-none"
+                    />
+                    <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center pointer-events-none">
+                      <span className="text-[9px] text-slate-400 bg-white/[0.06] border border-white/10 px-2 py-0.5 rounded-full font-sans font-medium">
+                        System Assigned
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
 
               <div className="p-2 rounded-lg bg-violet-500/10 border border-violet-500/20 text-[10px] text-violet-300 flex items-center gap-1.5 -mt-1">
                 <span>🔒</span>
-                <span>Assigned ID is permanent upon account creation and locked in profile.</span>
+                <span>System auto-assigned ID is read-only and permanently linked upon registration.</span>
               </div>
 
               <div>

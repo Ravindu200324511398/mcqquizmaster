@@ -1,22 +1,29 @@
 import React, { useState } from 'react';
-import { Quiz } from '../types';
+import { Quiz, User } from '../types';
 import { Icon } from './Icons';
 
 interface QuizDetailsModalProps {
   quiz: Quiz | null;
+  currentUser?: User | null;
   onClose: () => void;
   onProceed: (quiz: Quiz, studentName: string, studentId: string) => void;
 }
 
 export const QuizDetailsModal: React.FC<QuizDetailsModalProps> = ({
   quiz,
+  currentUser,
   onClose,
   onProceed,
 }) => {
   if (!quiz) return null;
 
-  const [studentName, setStudentName] = useState(localStorage.getItem('quiz_student_name') || 'Kasun Wickramasinghe');
-  const [studentId, setStudentId] = useState(localStorage.getItem('quiz_student_id') || 'EG/2021/1001');
+  const isIdLocked = Boolean(currentUser?.identifier || localStorage.getItem('quiz_student_id'));
+  const [studentName, setStudentName] = useState(
+    currentUser?.name || localStorage.getItem('quiz_student_name') || 'Kasun Wickramasinghe'
+  );
+  const [studentId, setStudentId] = useState(
+    currentUser?.identifier || localStorage.getItem('quiz_student_id') || 'EG/2021/1001'
+  );
   const [error, setError] = useState('');
 
   const handleStart = () => {
@@ -103,19 +110,38 @@ export const QuizDetailsModal: React.FC<QuizDetailsModalProps> = ({
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1">
-              Student Registration ID (e.g. EG/2021/1001) <span className="text-rose-400">*</span>
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-xs font-medium text-slate-300">
+                Student Registration ID <span className="text-rose-400">*</span>
+              </label>
+              {isIdLocked && (
+                <span className="text-[10px] font-mono text-violet-400 bg-violet-500/10 px-2 py-0.5 rounded border border-violet-500/20 flex items-center gap-1">
+                  🔒 Locked (Read-Only)
+                </span>
+              )}
+            </div>
             <input
               type="text"
+              readOnly={isIdLocked}
               value={studentId}
               onChange={e => {
-                setStudentId(e.target.value);
-                setError('');
+                if (!isIdLocked) {
+                  setStudentId(e.target.value);
+                  setError('');
+                }
               }}
               placeholder="e.g. EG/2021/1001"
-              className="w-full bg-slate-900/70 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-violet-500 transition-all font-mono"
+              className={`w-full rounded-xl px-3.5 py-2.5 text-sm font-mono transition-all ${
+                isIdLocked
+                  ? 'bg-slate-900/90 border border-violet-500/30 text-violet-300 cursor-not-allowed select-all'
+                  : 'bg-slate-900/70 border border-white/10 text-white focus:outline-none focus:border-violet-500'
+              }`}
             />
+            {isIdLocked && (
+              <p className="text-[10px] text-slate-500 mt-1">
+                Official institutional ID linked to candidate account and cannot be modified.
+              </p>
+            )}
           </div>
 
           {error && (
