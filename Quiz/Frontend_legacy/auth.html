@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In / Register | QuizMaster</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <script>if(localStorage.getItem('qm-theme')==='dark'){document.documentElement.classList.add('dark-theme-pre');}</script>
+  <style>
+    .dark-theme-pre { background: #0d1117 !important; }
+
+    /* ── Auth Page Layout ── */
+    body { min-height: 100vh; display: flex; flex-direction: column; }
+
+    .auth-page-wrapper {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      min-height: calc(100vh - 68px);
+    }
+
+    /* ── Left Panel (Hero) ── */
+    .auth-hero-panel {
+      background: linear-gradient(135deg, #1e1b4b 0%, #312e81 40%, #4c1d95 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 60px 48px;
+      position: relative;
+      overflow: hidden;
+    }
+    .auth-hero-panel::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(139, 92, 246, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(79, 70, 229, 0.3) 0%, transparent 50%);
+    }
+    .auth-hero-content { position: relative; z-index: 1; text-align: center; max-width: 380px; }
+    .auth-hero-logo { width: 96px; height: 96px; border-radius: 24px; margin-bottom: 24px; box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
+    .auth-hero-title { font-size: 2rem; font-weight: 800; color: white; margin-bottom: 12px; line-height: 1.2; }
+    .auth-hero-subtitle { font-size: 1rem; color: rgba(255,255,255,0.75); line-height: 1.6; margin-bottom: 36px; }
+
+    .auth-feature-list { display: flex; flex-direction: column; gap: 14px; text-align: left; }
+    .auth-feature-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 12px;
+      padding: 12px 16px;
+      color: rgba(255,255,255,0.9);
+      font-size: 0.88rem;
+    }
+    .auth-feature-item i { color: #a78bfa; font-size: 1rem; width: 18px; text-align: center; flex-shrink: 0; }
+
+    /* ── Right Panel (Form) ── */
+    .auth-form-panel {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 48px 40px;
+      background: var(--bg-main);
+      overflow-y: auto;
+    }
+    .auth-form-box {
+      width: 100%;
+      max-width: 420px;
+    }
+
+    /* ── Role Tab Switcher ── */
+    .auth-role-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 24px;
+      background: var(--light-bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 6px;
+    }
+    .role-tab-btn {
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: none;
+      background: transparent;
+      font-weight: 600;
+      font-size: 0.88rem;
+      cursor: pointer;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      transition: all 0.18s ease;
+    }
+    .role-tab-btn.active {
+      background: var(--primary);
+      color: white;
+      box-shadow: 0 2px 8px rgba(79,70,229,0.35);
+    }
+    .role-tab-btn.active.lecturer-active {
+      background: linear-gradient(135deg, #7c3aed, #4f46e5);
+      box-shadow: 0 2px 8px rgba(124,58,237,0.4);
+    }
+    body.dark-theme .auth-role-tabs { background: rgba(255,255,255,0.04); }
+
+    /* ── Mode Tab Switcher (Sign In / Register) ── */
+    .auth-mode-tabs {
+      display: flex;
+      gap: 0;
+      margin-bottom: 28px;
+      border-bottom: 2px solid var(--border);
+    }
+    .mode-tab-btn {
+      flex: 1;
+      padding: 11px 10px;
+      background: transparent;
+      border: none;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      position: relative;
+      transition: color 0.18s ease;
+    }
+    .mode-tab-btn.active {
+      color: var(--primary);
+    }
+    .mode-tab-btn.active::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0; right: 0;
+      height: 2px;
+      background: var(--primary);
+      border-radius: 2px 2px 0 0;
+    }
+
+    /* ── Forms ── */
+    .auth-form-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--dark);
+      margin-bottom: 6px;
+    }
+    .auth-form-desc {
+      font-size: 0.88rem;
+      color: var(--muted);
+      margin-bottom: 24px;
+      line-height: 1.5;
+    }
+
+    .auth-error-box {
+      display: none;
+      background: #fee2e2;
+      border: 1px solid #fca5a5;
+      color: #b91c1c;
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      font-size: 0.86rem;
+      margin-bottom: 16px;
+      gap: 8px;
+      align-items: flex-start;
+    }
+    body.dark-theme .auth-error-box { background: rgba(239,68,68,0.12); border-color: rgba(239,68,68,0.4); color: #fca5a5; }
+
+    .auth-success-box {
+      display: none;
+      background: #dcfce7;
+      border: 1px solid #86efac;
+      color: #166534;
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      font-size: 0.86rem;
+      margin-bottom: 16px;
+      gap: 8px;
+      align-items: flex-start;
+    }
+    body.dark-theme .auth-success-box { background: rgba(16,185,129,0.12); border-color: rgba(16,185,129,0.4); color: #6ee7b7; }
+
+    .auth-divider {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.8rem;
+      margin: 18px 0;
+      position: relative;
+    }
+    .auth-divider::before, .auth-divider::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      width: 40%;
+      height: 1px;
+      background: var(--border);
+    }
+    .auth-divider::before { left: 0; }
+    .auth-divider::after { right: 0; }
+
+    .btn-google-demo {
+      width: 100%;
+      padding: 11px;
+      background: var(--light-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--dark);
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.18s ease;
+    }
+    .btn-google-demo:hover { background: var(--primary-light); border-color: var(--primary); color: var(--primary); }
+    body.dark-theme .btn-google-demo { background: rgba(255,255,255,0.06); }
+
+    .password-toggle-wrapper { position: relative; }
+    .password-toggle-wrapper .form-control { padding-right: 44px; }
+    .btn-toggle-pw {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--muted);
+      font-size: 0.95rem;
+      padding: 4px;
+    }
+
+    .auth-footer-link {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 0.86rem;
+      color: var(--muted);
+    }
+    .auth-footer-link a { color: var(--primary); font-weight: 600; text-decoration: none; }
+    .auth-footer-link a:hover { text-decoration: underline; }
+
+    /* ── Lecturer badge on form header ── */
+    .auth-role-badge-lec {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(124,58,237,0.12);
+      border: 1px solid rgba(124,58,237,0.3);
+      color: #7c3aed;
+      border-radius: 20px;
+      padding: 3px 12px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      margin-bottom: 14px;
+    }
+    body.dark-theme .auth-role-badge-lec { background: rgba(168,85,247,0.15); color: #c084fc; }
+
+    .auth-role-badge-stu {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(16,185,129,0.1);
+      border: 1px solid rgba(16,185,129,0.3);
+      color: #059669;
+      border-radius: 20px;
+      padding: 3px 12px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      margin-bottom: 14px;
+    }
+    body.dark-theme .auth-role-badge-stu { background: rgba(16,185,129,0.12); color: #6ee7b7; }
+
+    /* ── Responsive ── */
+    @media (max-width: 860px) {
+      .auth-page-wrapper { grid-template-columns: 1fr; }
+      .auth-hero-panel { display: none; }
+      .auth-form-panel { padding: 36px 24px; }
+    }
+  </style>
+</head>
+<body id="page-body">
+
+  <!-- Compact Navbar -->
+  <nav class="navbar">
+    <div class="container nav-content">
+      <div class="nav-left-group">
+        <a href="index.html" class="brand" aria-label="QuizMaster Home">
+          <img src="images/quizmaster-badge.svg" alt="QuizMaster Logo" class="brand-logo-img">
+        </a>
+        <a href="index.html" class="nav-link-item"><i class="fa-solid fa-house"></i> Home</a>
+      </div>
+      <div class="nav-center-group">
+        <span style="font-size: 0.88rem; color: var(--muted); font-weight: 600;">
+          <i class="fa-solid fa-right-to-bracket" style="color: var(--primary);"></i> Account Access
+        </span>
+      </div>
+      <div class="nav-right-group">
+        <button id="theme-toggle-btn" title="Toggle Dark Mode" aria-label="Toggle Dark Mode">
+          <i class="fa-solid fa-moon" id="theme-icon"></i>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="auth-page-wrapper">
+
+    <!-- LEFT: Hero Panel -->
+    <div class="auth-hero-panel">
+      <div class="auth-hero-content">
+        <img src="images/quizmaster-logo.jpg" alt="QuizMaster Logo" class="auth-hero-logo">
+        <h1 class="auth-hero-title">QuizMaster Assessment Platform</h1>
+        <p class="auth-hero-subtitle">
+          Secure, role-based access for students and academic staff. Register once — sign in anytime with your email and password.
+        </p>
+        <div class="auth-feature-list">
+          <div class="auth-feature-item">
+            <i class="fa-solid fa-graduation-cap"></i>
+            <span>Students: Take quizzes, track progress, and view leaderboards.</span>
+          </div>
+          <div class="auth-feature-item">
+            <i class="fa-solid fa-chalkboard-user"></i>
+            <span>Lecturers: Create modules, manage questions, and review analytics.</span>
+          </div>
+          <div class="auth-feature-item">
+            <i class="fa-solid fa-shield-halved"></i>
+            <span>Role-based access ensures students cannot enter the Lecturer Console.</span>
+          </div>
+          <div class="auth-feature-item">
+            <i class="fa-solid fa-database"></i>
+            <span>All scores and submissions are saved to the MySQL database instantly.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Form Panel -->
+    <div class="auth-form-panel">
+      <div class="auth-form-box">
+
+        <!-- Role Selector -->
+        <div class="auth-role-tabs" id="role-tabs">
+          <button class="role-tab-btn active" id="tab-student" onclick="setRole('student')">
+            <i class="fa-solid fa-graduation-cap"></i> Student
+          </button>
+          <button class="role-tab-btn" id="tab-lecturer" onclick="setRole('lecturer')">
+            <i class="fa-solid fa-chalkboard-user"></i> Lecturer
+          </button>
+        </div>
+
+        <!-- Mode Selector: Sign In / Register -->
+        <div class="auth-mode-tabs">
+          <button class="mode-tab-btn active" id="mode-signin" onclick="setMode('signin')">
+            <i class="fa-solid fa-right-to-bracket"></i> Sign In
+          </button>
+          <button class="mode-tab-btn" id="mode-register" onclick="setMode('register')">
+            <i class="fa-solid fa-user-plus"></i> Register
+          </button>
+        </div>
+
+        <!-- Role Badge display -->
+        <div id="role-badge-container"></div>
+
+        <!-- Title + Desc -->
+        <h2 class="auth-form-title" id="form-title">Welcome Back!</h2>
+        <p class="auth-form-desc" id="form-desc">Sign in with your email and password to access the Student Portal.</p>
+
+        <!-- Error / Success banners -->
+        <div class="auth-error-box" id="auth-error-box">
+          <i class="fa-solid fa-circle-exclamation" style="margin-top: 1px;"></i>
+          <span id="auth-error-msg"></span>
+        </div>
+        <div class="auth-success-box" id="auth-success-box">
+          <i class="fa-solid fa-circle-check" style="margin-top: 1px;"></i>
+          <span id="auth-success-msg"></span>
+        </div>
+
+        <!-- ═══════════ SIGN IN FORM ═══════════ -->
+        <form id="signin-form" onsubmit="handleSignIn(event)">
+
+          <div class="form-group">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+              <label style="margin-bottom: 0;"><i class="fa-solid fa-envelope" style="color: var(--primary);"></i> Email Address <span style="color:var(--danger)">*</span></label>
+              <span style="font-size: 0.75rem; color: var(--muted);"><i class="fa-solid fa-clock-rotate-left"></i> Auto-suggest active</span>
+            </div>
+            <input type="email" id="signin-email" class="form-control" placeholder="e.g. yourname@university.lk" required autocomplete="email" list="signin-email-suggestions">
+            <datalist id="signin-email-suggestions"></datalist>
+            <!-- Clickable pills for previous emails -->
+            <div id="email-quick-suggestions" style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 7px;"></div>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 8px;">
+            <label><i class="fa-solid fa-lock" style="color: var(--primary);"></i> Password <span style="color:var(--danger)">*</span></label>
+            <div class="password-toggle-wrapper">
+              <input type="password" id="signin-password" class="form-control" placeholder="Enter your password" required autocomplete="current-password">
+              <button type="button" class="btn-toggle-pw" onclick="togglePassword('signin-password', this)" title="Show/Hide">
+                <i class="fa-solid fa-eye"></i>
+              </button>
+            </div>
+          </div>
+
+          <button type="submit" id="btn-signin" class="btn btn-primary" style="width: 100%; padding: 12px; font-size: 1rem; margin-top: 18px;">
+            <i class="fa-solid fa-right-to-bracket"></i> Sign In
+          </button>
+
+          <div class="auth-divider">or</div>
+
+          <button type="button" class="btn-google-demo" onclick="handleDemoLogin()">
+            <i class="fa-solid fa-bolt" style="color: #f59e0b;"></i>
+            <span id="demo-btn-text">Quick Demo (Student Account)</span>
+          </button>
+        </form>
+
+        <!-- ═══════════ REGISTER FORM ═══════════ -->
+        <form id="register-form" style="display: none;" onsubmit="handleRegister(event)">
+
+          <div class="form-group">
+            <label><i class="fa-solid fa-user" style="color: var(--primary);"></i> Full Name <span style="color:var(--danger)">*</span></label>
+            <input type="text" id="reg-name" class="form-control" placeholder="e.g. Kamal Perera" required autocomplete="name">
+          </div>
+
+          <div class="form-group">
+            <label><i class="fa-solid fa-envelope" style="color: var(--primary);"></i> Email Address <span style="color:var(--danger)">*</span></label>
+            <input type="email" id="reg-email" class="form-control" placeholder="e.g. kamal@university.lk" required autocomplete="email">
+          </div>
+
+          <div class="form-group">
+            <label>
+              <i class="fa-solid fa-id-badge" style="color: var(--primary);"></i>
+              <span id="reg-id-label">Student ID / Reg No.</span>
+              <span style="color: var(--muted); font-size: 0.78rem;"> (Optional — auto-generated if blank)</span>
+            </label>
+            <input type="text" id="reg-identifier" class="form-control" placeholder="e.g. EG/2021/1001 or LEC-4307">
+          </div>
+
+          <div class="form-group" style="margin-bottom: 8px;">
+            <label><i class="fa-solid fa-lock" style="color: var(--primary);"></i> Create Password <span style="color:var(--danger)">*</span></label>
+            <div class="password-toggle-wrapper">
+              <input type="password" id="reg-password" class="form-control" placeholder="Minimum 4 characters" required minlength="4" autocomplete="new-password">
+              <button type="button" class="btn-toggle-pw" onclick="togglePassword('reg-password', this)" title="Show/Hide">
+                <i class="fa-solid fa-eye"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 8px;">
+            <label><i class="fa-solid fa-lock-open" style="color: var(--primary);"></i> Confirm Password <span style="color:var(--danger)">*</span></label>
+            <div class="password-toggle-wrapper">
+              <input type="password" id="reg-confirm-password" class="form-control" placeholder="Re-enter password" required autocomplete="new-password">
+              <button type="button" class="btn-toggle-pw" onclick="togglePassword('reg-confirm-password', this)" title="Show/Hide">
+                <i class="fa-solid fa-eye"></i>
+              </button>
+            </div>
+          </div>
+
+          <button type="submit" id="btn-register" class="btn btn-primary" style="width: 100%; padding: 12px; font-size: 1rem; margin-top: 18px;">
+            <i class="fa-solid fa-user-plus"></i> Create Account
+          </button>
+        </form>
+
+        <!-- Footer link -->
+        <div class="auth-footer-link" id="footer-link-container">
+          <span id="footer-link-text">Don't have an account?</span>
+          <a href="#" id="footer-link-action" onclick="toggleMode(event)">Register now</a>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script>
+    // ─── State ───────────────────────────────────────────
+    let currentRole = 'student';
+    let currentMode = 'signin';
+
+    // ─── Role Switcher ───────────────────────────────────
+    function setRole(role) {
+      currentRole = role;
+      document.getElementById('tab-student').classList.toggle('active', role === 'student');
+      document.getElementById('tab-lecturer').classList.toggle('active', role === 'lecturer');
+      document.getElementById('tab-lecturer').classList.toggle('lecturer-active', role === 'lecturer');
+      document.getElementById('tab-student').classList.toggle('lecturer-active', false);
+      updateUIForRole();
+      clearMessages();
+    }
+
+    function setMode(mode) {
+      currentMode = mode;
+      document.getElementById('mode-signin').classList.toggle('active', mode === 'signin');
+      document.getElementById('mode-register').classList.toggle('active', mode === 'register');
+      document.getElementById('signin-form').style.display = mode === 'signin' ? 'block' : 'none';
+      document.getElementById('register-form').style.display = mode === 'register' ? 'block' : 'none';
+      updateUIForRole();
+      clearMessages();
+    }
+
+    function toggleMode(e) {
+      e.preventDefault();
+      setMode(currentMode === 'signin' ? 'register' : 'signin');
+    }
+
+    function updateUIForRole() {
+      const isLec = currentRole === 'lecturer';
+      const isSign = currentMode === 'signin';
+
+      // Badge
+      const badgeEl = document.getElementById('role-badge-container');
+      badgeEl.innerHTML = isLec
+        ? `<div class="auth-role-badge-lec"><i class="fa-solid fa-chalkboard-user"></i> LECTURER PORTAL</div>`
+        : `<div class="auth-role-badge-stu"><i class="fa-solid fa-graduation-cap"></i> STUDENT PORTAL</div>`;
+
+      // Title & desc
+      const titles = {
+        'student-signin': ['Welcome Back!', 'Sign in to access quizzes, leaderboards, and your performance history.'],
+        'student-register': ['Create Student Account', 'Register with your email and password to start taking assessments.'],
+        'lecturer-signin': ['Lecturer Sign In', 'Sign in to the Lecturer Console to manage quizzes, questions, and modules.'],
+        'lecturer-register': ['Register as Lecturer', 'Create your faculty account to gain access to the Lecturer Administration Console.'],
+      };
+      const key = `${currentRole}-${currentMode}`;
+      document.getElementById('form-title').textContent = titles[key][0];
+      document.getElementById('form-desc').textContent  = titles[key][1];
+
+      // Demo btn
+      document.getElementById('demo-btn-text').textContent = isLec
+        ? 'Quick Demo (Lecturer Account — Dr. N. Fernando)'
+        : 'Quick Demo (Student Account — Kamal Perera)';
+
+      // ID placeholder
+      if (document.getElementById('reg-id-label')) {
+        document.getElementById('reg-id-label').textContent = isLec ? 'Staff ID' : 'Student ID / Reg No.';
+        document.getElementById('reg-identifier').placeholder = isLec ? 'e.g. LEC-4307' : 'e.g. EG/2021/1001';
+      }
+
+      // Footer link
+      document.getElementById('footer-link-text').textContent = isSign ? "Don't have an account?" : 'Already have an account?';
+      document.getElementById('footer-link-action').textContent = isSign ? 'Register now' : 'Sign in instead';
+
+      // Update email auto-suggestions for current role
+      populateEmailSuggestions();
+    }
+
+    // ─── Email Auto-Suggestion & History ──────────────────
+    function populateEmailSuggestions() {
+      if (typeof QuizApi === 'undefined' || !QuizApi.getEmailHistory) return;
+      const history = QuizApi.getEmailHistory(currentRole);
+      const datalist = document.getElementById('signin-email-suggestions');
+      const quickBox = document.getElementById('email-quick-suggestions');
+      const emailInput = document.getElementById('signin-email');
+
+      if (datalist) {
+        datalist.innerHTML = history.map(email => `<option value="${email}"></option>`).join('');
+      }
+
+      // Pre-fill with the last logged-in email for this role
+      const lastEmail = QuizApi.getLastEmail(currentRole) || (history.length > 0 ? history[0] : '');
+      if (emailInput && (!emailInput.value || emailInput.value === 'student@quizmaster.lk' || emailInput.value === 'lecturer@quizmaster.lk')) {
+        emailInput.value = lastEmail;
+      }
+
+      // Render clickable shortcut pills for previous emails
+      if (quickBox) {
+        if (history && history.length > 0) {
+          quickBox.innerHTML = `
+            <span style="font-size: 0.74rem; color: var(--muted); align-self: center; display: inline-flex; align-items: center; gap: 4px;">
+              <i class="fa-solid fa-clock-rotate-left" style="color: var(--primary);"></i> Previous:
+            </span>` +
+            history.slice(0, 3).map(email => `
+              <button type="button" class="recent-email-pill" onclick="selectSuggestedEmail('${email}')" title="Click to auto-fill ${email}">
+                ${email}
+              </button>
+            `).join('');
+        } else {
+          quickBox.innerHTML = '';
+        }
+      }
+    }
+
+    function selectSuggestedEmail(email) {
+      const emailInput = document.getElementById('signin-email');
+      if (emailInput) {
+        emailInput.value = email;
+        const pw = document.getElementById('signin-password');
+        if (pw) pw.focus();
+      }
+    }
+
+    // ─── Helpers ─────────────────────────────────────────
+    function showError(msg) {
+      const box = document.getElementById('auth-error-box');
+      document.getElementById('auth-error-msg').textContent = msg;
+      box.style.display = 'flex';
+      document.getElementById('auth-success-box').style.display = 'none';
+    }
+    function showSuccess(msg) {
+      const box = document.getElementById('auth-success-box');
+      document.getElementById('auth-success-msg').textContent = msg;
+      box.style.display = 'flex';
+      document.getElementById('auth-error-box').style.display = 'none';
+    }
+    function clearMessages() {
+      document.getElementById('auth-error-box').style.display = 'none';
+      document.getElementById('auth-success-box').style.display = 'none';
+    }
+    function togglePassword(inputId, btn) {
+      const input = document.getElementById(inputId);
+      const isHidden = input.type === 'password';
+      input.type = isHidden ? 'text' : 'password';
+      btn.querySelector('i').className = isHidden ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
+    }
+    function setLoading(btnId, loading) {
+      const btn = document.getElementById(btnId);
+      if (loading) {
+        btn.disabled = true;
+        btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Please wait...`;
+      } else {
+        btn.disabled = false;
+        btn.innerHTML = btnId === 'btn-signin'
+          ? `<i class="fa-solid fa-right-to-bracket"></i> Sign In`
+          : `<i class="fa-solid fa-user-plus"></i> Create Account`;
+      }
+    }
+
+    // ─── Handle Sign In ───────────────────────────────────
+    async function handleSignIn(e) {
+      e.preventDefault();
+      clearMessages();
+      const email    = document.getElementById('signin-email').value.trim();
+      const password = document.getElementById('signin-password').value.trim();
+
+      if (!email || !password) { showError('Please fill in all fields.'); return; }
+
+      setLoading('btn-signin', true);
+      const result = await QuizApi.loginAuth({ email, password, role: currentRole });
+      setLoading('btn-signin', false);
+
+      if (!result.success) {
+        showError(result.message);
+        return;
+      }
+
+      // Save session
+      QuizApi.saveSession(result.user);
+      showSuccess(`${result.message} Redirecting...`);
+
+      setTimeout(() => {
+        const dest = currentRole === 'lecturer' ? 'admin.html' : 'index.html';
+        window.location.href = dest;
+      }, 1000);
+    }
+
+    // ─── Handle Register ──────────────────────────────────
+    async function handleRegister(e) {
+      e.preventDefault();
+      clearMessages();
+
+      const name       = document.getElementById('reg-name').value.trim();
+      const email      = document.getElementById('reg-email').value.trim();
+      const identifier = document.getElementById('reg-identifier').value.trim();
+      const password   = document.getElementById('reg-password').value.trim();
+      const confirm    = document.getElementById('reg-confirm-password').value.trim();
+
+      if (!name || !email || !password) { showError('Please fill in all required fields.'); return; }
+      if (password.length < 4) { showError('Password must be at least 4 characters.'); return; }
+      if (password !== confirm) { showError('Passwords do not match. Please re-enter.'); return; }
+      if (!email.includes('@')) { showError('Please enter a valid email address.'); return; }
+
+      setLoading('btn-register', true);
+      const result = await QuizApi.registerUser({ name, email, password, role: currentRole, identifier });
+      setLoading('btn-register', false);
+
+      if (!result.success) {
+        showError(result.message);
+        return;
+      }
+
+      QuizApi.saveEmailHistory(currentRole, email);
+      showSuccess(result.message + ' Switching to Sign In...');
+
+      // Auto-fill sign-in form and switch
+      setTimeout(() => {
+        document.getElementById('signin-email').value = email;
+        document.getElementById('signin-password').value = '';
+        setMode('signin');
+        showSuccess('Registration complete. Please sign in with your credentials.');
+      }, 1500);
+    }
+
+    // ─── Demo Quick Login ─────────────────────────────────
+    async function handleDemoLogin() {
+      clearMessages();
+      const creds = currentRole === 'lecturer'
+        ? { email: 'lecturer@quizmaster.lk', password: 'admin123', role: 'lecturer' }
+        : { email: 'student@quizmaster.lk',  password: 'student123', role: 'student' };
+
+      const btn = document.querySelector('.btn-google-demo');
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Logging in...`;
+
+      const result = await QuizApi.loginAuth(creds);
+      btn.disabled = false;
+      btn.innerHTML = `<i class="fa-solid fa-bolt" style="color:#f59e0b;"></i> <span id="demo-btn-text">${document.getElementById('demo-btn-text')?.textContent || 'Quick Demo'}</span>`;
+
+      if (!result.success) {
+        showError(result.message);
+        return;
+      }
+
+      QuizApi.saveSession(result.user);
+      showSuccess(`Welcome, ${result.user.name}! Redirecting...`);
+      setTimeout(() => {
+        window.location.href = currentRole === 'lecturer' ? 'admin.html' : 'index.html';
+      }, 900);
+    }
+
+    // ─── Auto-redirect if already logged in ──────────────
+    (function checkExistingSession() {
+      const user = QuizApi.getSession();
+      if (!user) return;
+      const params = new URLSearchParams(window.location.search);
+      const from = params.get('from') || '';
+      // Pre-select role if coming from a specific portal
+      if (from === 'lecturer') setRole('lecturer');
+    })();
+
+    // ─── Check URL params for role pre-selection ──────────
+    (function preSelectFromURL() {
+      const params = new URLSearchParams(window.location.search);
+      const role = params.get('role');
+      const mode = params.get('mode');
+      if (role === 'lecturer') setRole('lecturer');
+      if (mode === 'register') setMode('register');
+    })();
+
+    // ─── Theme Toggle ─────────────────────────────────────
+    const KEY = 'qm-theme';
+    function applyTheme(dark) {
+      document.body.classList.toggle('dark-theme', dark);
+      document.getElementById('theme-icon').className = dark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+    }
+    document.getElementById('theme-toggle-btn').addEventListener('click', () => {
+      const isDark = !document.body.classList.contains('dark-theme');
+      localStorage.setItem(KEY, isDark ? 'dark' : 'light');
+      applyTheme(isDark);
+    });
+    applyTheme(localStorage.getItem(KEY) === 'dark');
+
+    // Init UI
+    updateUIForRole();
+  </script>
+</body>
+</html>

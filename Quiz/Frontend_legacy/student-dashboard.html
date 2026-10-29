@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Performance Dashboard | Online Quiz System</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <script>if(localStorage.getItem('qm-theme')==='dark'){document.documentElement.classList.add('dark-theme-pre');}</script>
+  <style>.dark-theme-pre{background:#0d1117!important;}</style>
+</head>
+<body id="page-body">
+
+  <!-- Navigation -->
+  <!-- Navigation: Left (Home), Center (Lecturer Portal), Right (Student Portal & Items) -->
+  <nav class="navbar">
+    <div class="container nav-content">
+      <!-- LEFT CORNER: Home & Brand -->
+      <div class="nav-left-group">
+        <a href="index.html" class="brand" aria-label="QuizMaster Home">
+          <img src="images/quizmaster-badge.svg" alt="QuizMaster Logo" class="brand-logo-img">
+        </a>
+        <a href="index.html" class="nav-link-item"><i class="fa-solid fa-house"></i> Home</a>
+      </div>
+
+      <!-- MIDDLE / CENTER: Lecturer Portal -->
+      <div class="nav-center-group">
+        <a href="auth.html?role=lecturer" class="nav-lecturer-center-btn" title="Restricted to University Academic Staff & Module Coordinators">
+          <i class="fa-solid fa-chalkboard-user"></i>
+          <span>Lecturer Portal</span>
+          <span class="lock-tag"><i class="fa-solid fa-lock"></i> Staff</span>
+        </a>
+      </div>
+
+      <!-- RIGHT CORNER: Student Portal Items -->
+      <div class="nav-right-group">
+        <span class="portal-badge portal-badge-student"><i class="fa-solid fa-graduation-cap"></i> STUDENT PORTAL</span>
+        <a href="student-dashboard.html" class="nav-link-item active"><i class="fa-solid fa-id-card"></i> Student Profile</a>
+        <a href="leaderboard.html" class="nav-link-item"><i class="fa-solid fa-trophy"></i> Leaderboard</a>
+        <a href="index.html#quizzes" class="nav-btn"><i class="fa-solid fa-play"></i> Take a Quiz</a>
+        <!-- Auth button: dynamically updated by JS -->
+        <div id="nav-auth-area" style="display:flex;align-items:center;gap:7px;"></div>
+        <button id="theme-toggle-btn" title="Toggle Dark Mode" aria-label="Toggle Dark Mode">
+          <i class="fa-solid fa-moon" id="theme-icon"></i>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container" style="padding: 40px 20px;">
+
+    <!-- Student Portal Notice -->
+    <div style="background: rgba(124, 58, 237, 0.08); border-left: 4px solid var(--primary); padding: 12px 18px; border-radius: var(--radius-sm); margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <i class="fa-solid fa-graduation-cap" style="color: var(--primary); font-size: 1.25rem;"></i>
+        <span style="font-size: 0.9rem; color: var(--slate);">
+          <strong>Student Portal:</strong> Personalized student profile, assessment history, and module evaluations.
+        </span>
+      </div>
+      <a href="admin.html" style="font-size: 0.84rem; color: var(--primary); text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 5px;">
+        <i class="fa-solid fa-lock"></i> Lecturer Console Login &rarr;
+      </a>
+    </div>
+
+    <!-- Student Profile Banner -->
+    <div class="profile-banner-card">
+      <div class="profile-info-group">
+        <div class="profile-avatar" id="student-avatar">
+          <i class="fa-solid fa-user-graduate"></i>
+        </div>
+        <div class="profile-details">
+          <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+            <h2 id="dash-student-name">Loading Student Profile...</h2>
+            <span class="profile-badge" id="dash-student-id"><i class="fa-solid fa-id-badge"></i> ID: Loading...</span>
+          </div>
+          <div class="profile-meta-tags" style="margin-top: 8px;">
+            <span class="profile-badge"><i class="fa-solid fa-graduation-cap"></i> QuizMaster Certified Scholar</span>
+            <span class="profile-badge" style="background: rgba(16, 185, 129, 0.25); border-color: rgba(16, 185, 129, 0.4);"><i class="fa-solid fa-circle-check"></i> Enrolled Student</span>
+          </div>
+        </div>
+      </div>
+      <div>
+        <button class="btn btn-secondary" onclick="openLoginModal()" style="width: auto; background: rgba(255, 255, 255, 0.15); color: white; border: 1px solid rgba(255, 255, 255, 0.3);">
+          <i class="fa-solid fa-right-left"></i> Switch Account
+        </button>
+      </div>
+    </div>
+
+    <!-- Quick Active Student Switcher Bar -->
+    <div id="quick-switch-bar" style="background: var(--card-bg); border-radius: var(--radius-md); padding: 16px 20px; border: 1px solid var(--border); margin-bottom: 32px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
+      <span style="font-size: 0.88rem; font-weight: 700; color: var(--slate); display: flex; align-items: center; gap: 6px;">
+        <i class="fa-solid fa-users" style="color: var(--primary);"></i> Quick Profile Switch:
+      </span>
+      <div id="quick-student-pills" style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <!-- Injected via JS -->
+      </div>
+    </div>
+
+    <!-- Creative Dashboard Metrics Grid -->
+    <div class="dashboard-metrics-grid">
+      
+      <!-- Card 1: Total Quizzes Attempted -->
+      <div class="metric-card">
+        <div class="metric-card-top">
+          <div>
+            <div class="metric-value" id="metric-total-attempts">0</div>
+            <div class="metric-label">Total Quizzes Attempted</div>
+          </div>
+          <div class="metric-icon-box icon-purple">
+            <i class="fa-solid fa-pen-ruler"></i>
+          </div>
+        </div>
+        <div style="font-size: 0.85rem; color: var(--muted); display: flex; align-items: center; gap: 6px;">
+          <span class="quiz-badge badge-web" style="font-size: 0.75rem;">Verified Logs</span>
+          <span>Completed Assessments</span>
+        </div>
+        <div class="metric-progress-wrapper">
+          <div class="metric-mini-bar">
+            <div class="metric-mini-bar-fill fill-purple" id="bar-attempts" style="width: 100%;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2: Average Score Percentage -->
+      <div class="metric-card">
+        <div class="metric-card-top">
+          <div>
+            <div class="metric-value" id="metric-avg-score">0%</div>
+            <div class="metric-label">Average Score Percentage</div>
+          </div>
+          <div class="metric-icon-box icon-blue">
+            <i class="fa-solid fa-chart-pie"></i>
+          </div>
+        </div>
+        <div style="font-size: 0.85rem; color: var(--muted);" id="metric-avg-status">
+          Calculating academic standing...
+        </div>
+        <div class="metric-progress-wrapper">
+          <div class="metric-mini-bar">
+            <div class="metric-mini-bar-fill fill-blue" id="bar-avg" style="width: 0%;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 3: Highest Score Achieved -->
+      <div class="metric-card">
+        <div class="metric-card-top">
+          <div>
+            <div class="metric-value" id="metric-highest-score">0%</div>
+            <div class="metric-label">Highest Score Achieved</div>
+          </div>
+          <div class="metric-icon-box icon-emerald">
+            <i class="fa-solid fa-trophy"></i>
+          </div>
+        </div>
+        <div style="font-size: 0.85rem; color: var(--muted); display: flex; align-items: center; gap: 6px;">
+          <span class="quiz-badge badge-java" style="font-size: 0.75rem;"><i class="fa-solid fa-star"></i> Personal Best</span>
+          <span>Peak Performance</span>
+        </div>
+        <div class="metric-progress-wrapper">
+          <div class="metric-mini-bar">
+            <div class="metric-mini-bar-fill fill-emerald" id="bar-highest" style="width: 0%;"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Recent Activity Section -->
+    <div class="section-header" style="margin-top: 10px;">
+      <div>
+        <h2><i class="fa-solid fa-clock-rotate-left" style="color: var(--primary);"></i> Recent Activity Log</h2>
+        <p>Comprehensive record of all attempted quizzes, dates, and marks obtained</p>
+      </div>
+      <div>
+        <a href="index.html#quizzes" class="btn btn-primary" style="width: auto;">
+          <i class="fa-solid fa-play"></i> Attempt Another Quiz
+        </a>
+      </div>
+    </div>
+
+    <!-- Recent Activity Data Table -->
+    <div class="data-table-card">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th style="width: 60px;">#</th>
+            <th>Quiz Assessment</th>
+            <th>Date & Time Attempted</th>
+            <th>Marks Obtained</th>
+            <th>Percentage</th>
+            <th>Standing</th>
+            <th style="text-align: right;">Action</th>
+          </tr>
+        </thead>
+        <tbody id="activity-table-body">
+          <tr>
+            <td colspan="7" style="text-align: center; padding: 40px; color: var(--muted);">
+              <i class="fa-solid fa-spinner fa-spin fa-2x"></i>
+              <p style="margin-top: 10px;">Fetching student activity data...</p>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </main>
+
+  <!-- Student Login / Switch Profile Modal -->
+  <div id="login-modal" style="display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.6); backdrop-filter: blur(4px); z-index: 1000; align-items: center; justify-content: center;">
+    <div style="background: white; border-radius: 16px; padding: 32px; max-width: 440px; width: 90%; box-shadow: var(--shadow-lg);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <h3 style="font-size: 1.35rem; color: var(--dark);">Student Login</h3>
+        <button onclick="closeLoginModal()" style="background:none; border:none; font-size:1.2rem; cursor:pointer; color:var(--muted);">&times;</button>
+      </div>
+      <p style="color: var(--muted); font-size: 0.9rem; margin-bottom: 20px;">Enter your Student Registration No. or Full Name to load your personalized performance metrics.</p>
+      
+      <form onsubmit="handleStudentLogin(event)">
+        <div class="form-group">
+          <label>Student ID / Reg No.</label>
+          <input type="text" id="login-student-id" class="form-control" placeholder="e.g. EG/2021/1001" required>
+        </div>
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" id="login-student-name" class="form-control" placeholder="e.g. Kamal Perera">
+        </div>
+        <div style="display: flex; gap: 12px; margin-top: 24px;">
+          <button type="button" class="btn btn-secondary" onclick="closeLoginModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-arrow-right-to-bracket"></i> Load Dashboard</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Footer (Purple Theme QuizMaster Platform) -->
+  <footer class="site-footer">
+    <div class="container footer-container">
+      <div class="footer-grid">
+        
+        <!-- Left Column: QuizMaster Platform Info -->
+        <div class="footer-about">
+          <div class="footer-logos">
+            <img src="images/quizmaster-badge.svg" alt="QuizMaster Logo" class="footer-badge-logo">
+          </div>
+          <p class="footer-desc">
+            QuizMaster is an interactive digital assessment and online examination platform designed for contemporary educational institutions and skill evaluations. Featuring automated grading, real-time analytics, question bank management, and anti-cheat exam monitoring to empower students and instructors worldwide.
+          </p>
+        </div>
+
+        <!-- Right Column: Contact Us (Purple Theme) -->
+        <div class="footer-contact">
+          <h3 class="footer-contact-title">
+            <i class="fa-solid fa-headset" style="font-size: 1.15rem; margin-right: 8px;"></i> Contact Us
+          </h3>
+          <p class="footer-contact-address">
+            QuizMaster Learning Technologies, Tech Hub Center, Colombo, Sri Lanka.
+          </p>
+          <div class="footer-contact-list">
+            <div class="footer-contact-item">
+              <i class="fa-solid fa-phone"></i>
+              <span>Hotline : +(94) 11 234 5678 / +(94) 77 890 1234</span>
+            </div>
+            <div class="footer-contact-item">
+              <i class="fa-solid fa-envelope"></i>
+              <span>Email : <a href="mailto:support@quizmaster.edu.lk">support@quizmaster.edu.lk</a></span>
+            </div>
+            <div class="footer-contact-item">
+              <i class="fa-solid fa-clock"></i>
+              <span>Hours : Mon – Fri 8:30 AM – 5:30 PM (24/7 Live Monitoring)</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Bottom Bar -->
+      <div class="footer-bottom-bar">
+        <p>&copy; 2026 QuizMaster Online Assessment System. All Rights Reserved.</p>
+        <div class="footer-bottom-links">
+          <span>Privacy Policy</span> &bull; 
+          <span>Terms of Service</span> &bull; 
+          <span>Student Analytics Hub</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/api.js"></script>
+  <script>
+    let currentStudentIdentifier = '';
+
+    // Initialize Dashboard on page load
+    async function initDashboard() {
+      // Check saved session student or default
+      const savedId = localStorage.getItem('current_student_id');
+      const savedName = localStorage.getItem('current_student_name');
+
+      currentStudentIdentifier = (savedId && savedId.trim()) ? savedId.trim() : ((savedName && savedName.trim()) ? savedName.trim() : 'EG/2021/1001');
+
+      await loadActiveStudentsPills();
+      await fetchAndRenderDashboard(currentStudentIdentifier);
+    }
+
+    // Load Quick Profile Switcher Pills
+    async function loadActiveStudentsPills() {
+      const container = document.getElementById('quick-student-pills');
+      const activeStudents = await QuizApi.getActiveStudents();
+
+      if (!activeStudents || activeStudents.length === 0) {
+        container.innerHTML = '<span style="color: var(--muted); font-size: 0.85rem;">No registered students yet.</span>';
+        return;
+      }
+
+      container.innerHTML = activeStudents.map(s => {
+        const key = s.studentId || s.studentName;
+        const isCurrent = (key.toLowerCase() === currentStudentIdentifier.toLowerCase() || (s.studentName && s.studentName.toLowerCase() === currentStudentIdentifier.toLowerCase()));
+        return `
+          <button class="student-pill ${isCurrent ? 'active' : ''}" onclick="switchStudent('${key}')">
+            <i class="fa-solid fa-user-circle"></i> ${s.studentName || 'Student'} (${s.studentId || 'N/A'})
+          </button>
+        `;
+      }).join('');
+    }
+
+    // Switch student profile
+    async function switchStudent(identifier) {
+      currentStudentIdentifier = identifier;
+      await fetchAndRenderDashboard(identifier);
+      await loadActiveStudentsPills();
+    }
+
+    // Fetch student profile and render metrics & recent activity
+    async function fetchAndRenderDashboard(identifier) {
+      console.log('[Student Dashboard] Fetching dashboard data for:', identifier);
+      const data = await QuizApi.getStudentDashboard(identifier);
+
+      // Render Profile Banner
+      document.getElementById('dash-student-name').innerText = data.studentName || identifier;
+      document.getElementById('dash-student-id').innerHTML = `<i class="fa-solid fa-id-badge"></i> ID: ${data.studentId || 'N/A'}`;
+
+      // Save to localStorage for seamless cross-page session
+      if (data.studentName) localStorage.setItem('current_student_name', data.studentName);
+      if (data.studentId) localStorage.setItem('current_student_id', data.studentId);
+
+      // Render Creative Metric Cards
+      // 1. Total Quizzes Attempted
+      document.getElementById('metric-total-attempts').innerText = data.totalQuizzesAttempted || 0;
+
+      // 2. Average Score Percentage
+      const avgScore = data.averageScorePercentage !== undefined ? data.averageScorePercentage : 0;
+      document.getElementById('metric-avg-score').innerText = `${avgScore}%`;
+      document.getElementById('bar-avg').style.width = `${Math.min(avgScore, 100)}%`;
+
+      const statusEl = document.getElementById('metric-avg-status');
+      if (avgScore >= 80) {
+        statusEl.innerHTML = '<span style="color: #10b981; font-weight: 700;"><i class="fa-solid fa-circle-check"></i> Outstanding (A Grade)</span>';
+      } else if (avgScore >= 60) {
+        statusEl.innerHTML = '<span style="color: #0284c7; font-weight: 700;"><i class="fa-solid fa-thumbs-up"></i> Good Standing (B/C Grade)</span>';
+      } else if (data.totalQuizzesAttempted === 0) {
+        statusEl.innerText = 'No quizzes taken yet.';
+      } else {
+        statusEl.innerHTML = '<span style="color: #f59e0b; font-weight: 700;"><i class="fa-solid fa-book-open"></i> Needs Practice</span>';
+      }
+
+      // 3. Highest Score
+      const highestScore = data.highestScorePercentage || 0;
+      document.getElementById('metric-highest-score').innerText = `${highestScore}%`;
+      document.getElementById('bar-highest').style.width = `${Math.min(highestScore, 100)}%`;
+
+      // Render Recent Activity Table
+      renderRecentActivityTable(data.recentActivities);
+    }
+
+    // Render Recent Activity Table
+    function renderRecentActivityTable(activities) {
+      const tbody = document.getElementById('activity-table-body');
+
+      if (!activities || activities.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" style="text-align: center; padding: 48px; color: var(--muted);">
+              <i class="fa-solid fa-folder-open fa-2x" style="margin-bottom: 10px; color: #cbd5e1;"></i>
+              <p style="font-weight: 600; font-size: 1rem; color: var(--slate);">No quiz attempts found for this student.</p>
+              <p style="font-size: 0.85rem; margin-top: 4px;">Click the button below to attempt your first subject quiz!</p>
+              <a href="index.html#quizzes" class="btn btn-primary" style="width: auto; margin-top: 16px; display: inline-flex;">
+                <i class="fa-solid fa-play"></i> Start Quiz Assessment
+              </a>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = activities.map((item, index) => {
+        const rowNum = index + 1;
+        const percentage = item.percentage !== undefined ? item.percentage : Math.round((item.score / item.totalQuestions) * 100);
+
+        // Format Date
+        let dateFormatted = item.attemptedAt || item.date || 'Recent';
+        if (dateFormatted.includes('T')) {
+          const parts = dateFormatted.split('T');
+          dateFormatted = `${parts[0]} at ${parts[1].substring(0, 5)}`;
+        }
+
+        // Standing Badge
+        let standingBadge = `<span class="quiz-badge" style="background:#fee2e2; color:#dc2626;"><i class="fa-solid fa-xmark"></i> Below Pass</span>`;
+        if (percentage >= 75) {
+          standingBadge = `<span class="quiz-badge" style="background:#d1fae5; color:#059669;"><i class="fa-solid fa-check-double"></i> Distinction</span>`;
+        } else if (percentage >= 50) {
+          standingBadge = `<span class="quiz-badge" style="background:#e0f2fe; color:#0284c7;"><i class="fa-solid fa-check"></i> Passed</span>`;
+        }
+
+        return `
+          <tr>
+            <td style="font-weight: 700; color: var(--muted);">${rowNum}</td>
+            <td>
+              <strong style="color: var(--dark); font-size: 0.98rem;">${item.quizTitle || 'Quiz Assessment'}</strong>
+              <div style="font-size: 0.8rem; color: var(--muted);">Assessment ID: #${item.quizId || item.id}</div>
+            </td>
+            <td>
+              <span style="font-size: 0.88rem; color: var(--slate); font-weight: 500;">
+                <i class="fa-regular fa-calendar-days" style="color: var(--muted);"></i> ${dateFormatted}
+              </span>
+            </td>
+            <td>
+              <strong style="font-size: 1.05rem; color: var(--dark);">${item.score}</strong>
+              <span style="color: var(--muted); font-size: 0.85rem;">/ ${item.totalQuestions} Questions</span>
+            </td>
+            <td>
+              <span class="quiz-badge" style="background: ${percentage >= 75 ? 'var(--success-light)' : 'var(--primary-light)'}; color: ${percentage >= 75 ? 'var(--success)' : 'var(--primary)'}; font-size: 0.85rem; font-weight: 700;">
+                ${percentage}%
+              </span>
+            </td>
+            <td>${standingBadge}</td>
+            <td style="text-align: right;">
+              <a href="quiz.html?quizId=${item.quizId || 1}" class="btn btn-secondary" style="width: auto; padding: 6px 14px; font-size: 0.82rem;">
+                <i class="fa-solid fa-arrow-rotate-right"></i> Retake
+              </a>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // Modal Operations
+    function openLoginModal() {
+      document.getElementById('login-modal').style.display = 'flex';
+      const savedId = localStorage.getItem('current_student_id');
+      const savedName = localStorage.getItem('current_student_name');
+      if (savedId) document.getElementById('login-student-id').value = savedId;
+      if (savedName) document.getElementById('login-student-name').value = savedName;
+    }
+
+    function closeLoginModal() {
+      document.getElementById('login-modal').style.display = 'none';
+    }
+
+    async function handleStudentLogin(event) {
+      event.preventDefault();
+      const id = document.getElementById('login-student-id').value.trim();
+      const name = document.getElementById('login-student-name').value.trim();
+
+      if (!id && !name) {
+        alert('Please enter your Student ID or Full Name.');
+        return;
+      }
+
+      await QuizApi.loginStudent(name, id);
+      closeLoginModal();
+      currentStudentIdentifier = id || name;
+      await fetchAndRenderDashboard(currentStudentIdentifier);
+      await loadActiveStudentsPills();
+    }
+
+    function renderNavAuthArea() {
+      const user = (typeof QuizApi !== 'undefined' && QuizApi.getSession) ? QuizApi.getSession() : null;
+      const area = document.getElementById('nav-auth-area');
+      if (!area) return;
+      if (user && user.role === 'student') {
+        area.innerHTML = `
+          <div style="display:flex;align-items:center;gap:6px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);border-radius:20px;padding:4px 12px;font-size:0.82rem;font-weight:600;color:#059669;" title="${user.email || ''}">
+            <i class="fa-solid fa-circle-user"></i> ${(user.name || 'Student').split(' ')[0]}
+          </div>
+          <button onclick="handleStudentLogout()" style="background:none;border:1px solid var(--border);border-radius:8px;padding:5px 10px;font-size:0.8rem;cursor:pointer;color:var(--muted);white-space:nowrap;" title="Sign Out">
+            <i class="fa-solid fa-right-from-bracket"></i>
+          </button>`;
+      } else {
+        area.innerHTML = `<a href="auth.html" class="nav-signin-btn"><i class="fa-solid fa-right-to-bracket"></i> Sign In</a>`;
+      }
+    }
+
+    function handleStudentLogout() {
+      if (confirm('Sign out of your student account?')) {
+        if (typeof QuizApi !== 'undefined') QuizApi.clearSession();
+        renderNavAuthArea();
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initDashboard();
+      renderNavAuthArea();
+    });
+  </script>
+
+  <!-- Dark Theme Toggle Script -->
+  <script>
+    (function() {
+      const body = document.getElementById('page-body');
+      const btn  = document.getElementById('theme-toggle-btn');
+      const icon = document.getElementById('theme-icon');
+      const DARK = 'dark-theme'; const KEY = 'qm-theme';
+      function applyTheme(isDark) {
+        body.classList.toggle(DARK, isDark);
+        icon.className = isDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+        localStorage.setItem(KEY, isDark ? 'dark' : 'light');
+      }
+      applyTheme(localStorage.getItem(KEY) === 'dark');
+      btn.addEventListener('click', function() { applyTheme(!body.classList.contains(DARK)); });
+    })();
+  </script>
+</body>
+</html>

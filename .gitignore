@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build Outputs
+dist/
+build/
+target/
+*.class
+
+# Vercel
+.vercel/
+
+# Environment Variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Temporary recordings and scratch binaries
+7b91666c-abff-4f6c-9219-66d4ec4f9620
+ebf827bc-8955-4b52-9cca-d2d071301f7b
+*.log

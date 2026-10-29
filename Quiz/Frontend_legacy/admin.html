@@ -1,0 +1,1525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin & Instructor Portal | Online Quiz System</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    .tab-bar {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 12px;
+    }
+    .tab-btn {
+      padding: 10px 20px;
+      border-radius: var(--radius-sm);
+      border: 1px solid transparent;
+      background: none;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: color 0.12s ease, background-color 0.12s ease, border-color 0.12s ease;
+    }
+    .tab-btn:hover {
+      color: var(--dark);
+      background: rgba(124, 58, 237, 0.05);
+    }
+    .tab-btn.active {
+      background: rgba(124, 58, 237, 0.12);
+      color: #7c3aed;
+      border-color: rgba(124, 58, 237, 0.25);
+    }
+    body.dark-theme .tab-btn.active {
+      background: rgba(168, 85, 247, 0.22);
+      color: #c084fc;
+      border-color: rgba(168, 85, 247, 0.35);
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+  </style>
+  <script>if(localStorage.getItem('qm-theme')==='dark'){document.documentElement.classList.add('dark-theme-pre');}</script>
+  <style>.dark-theme-pre{background:#0d1117!important;}</style>
+</head>
+<body id="page-body" class="lecturer-portal-page">
+
+  <!-- Navigation: Left (Home), Center (Lecturer Portal), Right (Student Portal & Items) -->
+  <nav class="navbar">
+    <div class="container nav-content">
+      <!-- LEFT CORNER: Home & Brand -->
+      <div class="nav-left-group">
+        <a href="index.html" class="brand" aria-label="QuizMaster Portal">
+          <img src="images/quizmaster-badge.svg" alt="QuizMaster Logo" class="brand-logo-img">
+        </a>
+        <a href="index.html" class="nav-link-item"><i class="fa-solid fa-house"></i> Home</a>
+      </div>
+
+      <!-- MIDDLE / CENTER: Lecturer Portal -->
+      <div class="nav-center-group">
+        <div class="nav-lecturer-center-btn" style="cursor: default; pointer-events: none; border-color: rgba(168, 85, 247, 0.45); background: rgba(168, 85, 247, 0.12);">
+          <i class="fa-solid fa-chalkboard-user"></i>
+          <span>Lecturer Portal</span>
+          <span class="lock-tag"><i class="fa-solid fa-shield-halved"></i> Faculty</span>
+        </div>
+      </div>
+
+      <!-- RIGHT CORNER: Student Portal Items & Admin Controls -->
+      <div class="nav-right-group">
+        <!-- Gate Return Link (shown when locked) -->
+        <div id="gate-nav-right" style="display: flex; align-items: center; gap: 8px;">
+          <a href="index.html" class="nav-link-item"><i class="fa-solid fa-graduation-cap"></i> Student Portal</a>
+        </div>
+
+        <!-- Authenticated Links & Lecturer Profile (shown when authenticated) -->
+        <div id="admin-nav-links" style="display: none; align-items: center; gap: 6px;">
+          <a href="student-dashboard.html" class="nav-link-item"><i class="fa-solid fa-graduation-cap"></i> Student Profile View</a>
+          <a href="leaderboard.html" class="nav-link-item"><i class="fa-solid fa-trophy"></i> Leaderboard</a>
+        </div>
+
+        <div id="admin-nav-user" style="display: none; align-items: center; gap: 8px;">
+          <div class="lecturer-active-profile-pill" onclick="openInstructorModal()" style="cursor: pointer;" title="Click to view Faculty Privileges & Actions">
+            <i class="fa-solid fa-user-tie" style="color: #a855f7;"></i>
+            <span id="nav-lecturer-name">Dr. N. Fernando</span>
+            <span style="font-size: 0.75rem; background: rgba(168, 85, 247, 0.2); color: #a855f7; padding: 2px 6px; border-radius: 4px; font-weight: 700;">LEC-4307</span>
+          </div>
+          <button type="button" onclick="handleLecturerLogout()" class="btn btn-secondary-outline" style="padding: 6px 12px; font-size: 0.85rem;" title="Lock Console & Logout">
+            <i class="fa-solid fa-right-from-bracket"></i> Lock
+          </button>
+        </div>
+
+        <button id="theme-toggle-btn" title="Toggle Dark Mode" aria-label="Toggle Dark Mode">
+          <i class="fa-solid fa-moon" id="theme-icon"></i>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Lecturer Authentication Gate (Protected Access) -->
+  <div id="lecturer-auth-gate" class="lecturer-auth-gate-container">
+    <div class="lecturer-gate-card">
+      <div class="lecturer-gate-header">
+        <div class="lecturer-gate-icon-box">
+          <i class="fa-solid fa-shield-halved"></i>
+        </div>
+        <h2 style="font-size: 1.5rem; margin-bottom: 6px; font-weight: 700;">Lecturer & Examiner Portal</h2>
+        <p style="font-size: 0.9rem; opacity: 0.9; margin: 0;">Authorized Academic Staff & Module Coordinators Only</p>
+        <div class="lecturer-pill-tag">
+          <i class="fa-solid fa-lock"></i> Protected Interface &bull; Students Restricted
+        </div>
+      </div>
+
+      <div class="lecturer-gate-body">
+        <div style="background: rgba(124, 58, 237, 0.08); border-left: 4px solid #7c3aed; padding: 12px 16px; border-radius: 6px; margin-bottom: 20px; font-size: 0.88rem; color: var(--slate);">
+          <strong style="color: var(--dark); display: block; margin-bottom: 3px;">
+            <i class="fa-solid fa-circle-info" style="color: #7c3aed;"></i> Role-Based Access Control (RBAC)
+          </strong>
+          Students must take assessments and review their progress on the <strong>Student Portal</strong>. This console is restricted to university lecturers to create quizzes, manage questions, and organize modules.
+        </div>
+
+        <form id="lecturer-login-form" onsubmit="handleLecturerLogin(event)">
+          <div class="form-group">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+              <label style="font-weight: 600; font-size: 0.9rem; margin-bottom: 0;">
+                <i class="fa-solid fa-envelope" style="color: #7c3aed;"></i> Email Address <span style="color: var(--danger);">*</span>
+              </label>
+              <span style="font-size: 0.75rem; color: var(--muted);"><i class="fa-solid fa-clock-rotate-left"></i> Auto-suggest active</span>
+            </div>
+            <input type="email" id="gate-staff-id" class="form-control" placeholder="e.g. lecturer@university.lk" required list="gate-email-suggestions" autocomplete="email">
+            <datalist id="gate-email-suggestions"></datalist>
+            <!-- Quick suggestion pills for previous lecturer emails -->
+            <div id="gate-email-quick-suggestions" style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 7px;"></div>
+          </div>
+
+          <div class="form-group">
+            <label style="font-weight: 600; font-size: 0.9rem;">
+              <i class="fa-solid fa-key" style="color: #7c3aed;"></i> Password <span style="color: var(--danger);">*</span>
+            </label>
+            <div style="position: relative;">
+              <input type="password" id="gate-passcode" class="form-control" placeholder="Enter your password" required value="admin123" style="padding-right: 44px;">
+              <button type="button" onclick="const i=document.getElementById('gate-passcode');const b=this.querySelector('i');i.type=i.type==='password'?'text':'password';b.className=i.type==='password'?'fa-solid fa-eye':'fa-solid fa-eye-slash';"
+                style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);font-size:0.95rem;">
+                <i class="fa-solid fa-eye"></i>
+              </button>
+            </div>
+          </div>
+
+          <div id="gate-error-msg" style="display: none; background: #fee2e2; border: 1px solid #f87171; color: #b91c1c; padding: 10px 14px; border-radius: var(--radius-sm); font-size: 0.88rem; margin-bottom: 16px;">
+            <i class="fa-solid fa-circle-exclamation"></i> Invalid credentials. Please verify your email and password.
+          </div>
+
+          <button type="submit" id="btn-gate-login" class="btn btn-primary" style="width: 100%; padding: 12px; font-size: 1rem; font-weight: 600;">
+            <i class="fa-solid fa-unlock-keyhole"></i> Sign In to Lecturer Console
+          </button>
+        </form>
+
+        <!-- Viva Evaluation Quick Pass -->
+        <div style="background: rgba(168, 85, 247, 0.08); border: 1px dashed rgba(168, 85, 247, 0.4); border-radius: var(--radius-sm); padding: 14px; margin-top: 20px; text-align: center;">
+          <p style="font-size: 0.84rem; color: var(--muted); margin-bottom: 8px;">
+            <strong style="color: var(--dark);">Faculty Evaluation Quick Pass:</strong> Test as Module Coordinator without typing:
+          </p>
+          <button type="button" class="btn btn-secondary" onclick="quickLecturerDemoLogin()" style="width: 100%; border-color: rgba(168, 85, 247, 0.5);">
+            <i class="fa-solid fa-bolt" style="color: #f59e0b;"></i> One-Click Demo Lecturer Login (Dr. N. Fernando - LEC-4307)
+          </button>
+        </div>
+
+        <div style="margin-top: 20px; text-align: center;">
+          <a href="index.html" style="color: var(--muted); text-decoration: none; font-size: 0.88rem; display: inline-flex; align-items: center; gap: 6px;">
+            <i class="fa-solid fa-arrow-left"></i> Return to Student Portal (Browse & Attempt Quizzes)
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <main id="admin-main-content" class="container" style="padding: 40px 20px; display: none;">
+    
+    <!-- Lecturer Profile & Faculty Banner with Transparent Image Background -->
+    <div class="lecturer-banner-card">
+      <div style="display: flex; align-items: center; gap: 20px; flex-wrap: wrap;">
+        <div class="lecturer-avatar-box">
+          <i class="fa-solid fa-chalkboard-user"></i>
+        </div>
+        <div>
+          <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+            <h2 style="font-size: 1.65rem; color: #ffffff; margin: 0; font-weight: 700;">Faculty & Lecturer Console</h2>
+            <span class="portal-badge portal-badge-lecturer" style="background: rgba(255, 255, 255, 0.22); color: #ffffff; border-color: rgba(255, 255, 255, 0.35); font-size: 0.78rem;">
+              <i class="fa-solid fa-user-shield"></i> Dr. N. Fernando &bull; LEC-4307
+            </span>
+          </div>
+          <p style="margin: 6px 0 0 0; color: rgba(255, 255, 255, 0.9); font-size: 0.95rem;">
+            Course Coordinator &bull; Faculty of Engineering &bull; Module Assessments, Question Bank & Student Evaluations
+          </p>
+        </div>
+      </div>
+      <div>
+        <button type="button" class="btn btn-secondary" onclick="openInstructorModal()" style="width: auto; background: rgba(255, 255, 255, 0.18); color: white; border: 1px solid rgba(255, 255, 255, 0.35); backdrop-filter: blur(8px);">
+          <span class="live-dot-green"></span>
+          <i class="fa-solid fa-id-badge"></i> Faculty Privileges
+        </button>
+      </div>
+    </div>
+
+    <!-- Tab Bar: 2 Clear, Streamlined Tabs -->
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="switchTab('manage-quizzes')">
+        <i class="fa-solid fa-list-check"></i> Manage Quizzes & Questions
+      </button>
+      <button class="tab-btn" onclick="switchTab('add-quiz')">
+        <i class="fa-solid fa-plus-circle"></i> Create New Quiz
+      </button>
+    </div>
+
+    <!-- TAB 1: Manage Quizzes & Questions List -->
+    <div id="tab-manage-quizzes" class="tab-content active">
+      <!-- Search, Sort, Module Filter & Counter Controls for Admin Table -->
+      <div class="controls-top-row" style="margin-bottom: 20px; background: var(--card-bg); padding: 14px 20px; border-radius: var(--radius-md); border: 1px solid var(--border); box-shadow: var(--shadow-sm); display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
+        <div class="search-box-wrapper" style="max-width: 320px; flex: 1;">
+          <i class="fa-solid fa-magnifying-glass search-icon"></i>
+          <input type="text" id="admin-quiz-search" placeholder="Search by quiz title or category..." oninput="handleAdminSearch()">
+        </div>
+        <div class="sort-group">
+          <label for="admin-module-filter"><i class="fa-solid fa-book-bookmark"></i> Module:</label>
+          <select id="admin-module-filter" class="sort-select" onchange="handleAdminFilter()">
+            <option value="ALL">All Modules</option>
+            <option value="web">EE4207: Web App Dev</option>
+            <option value="java">CS201: Java & OOP</option>
+            <option value="db">IT104: Database Systems</option>
+            <option value="general">CS100: General Computing</option>
+          </select>
+        </div>
+        <div class="sort-group">
+          <label for="admin-quiz-sort"><i class="fa-solid fa-arrow-down-short-wide"></i> Sort:</label>
+          <select id="admin-quiz-sort" class="sort-select" onchange="handleAdminSort()">
+            <option value="id-asc">ID (Low → High)</option>
+            <option value="id-desc">ID (High → Low)</option>
+            <option value="title-asc">Title (A → Z)</option>
+            <option value="time-desc">Time Limit (Longest First)</option>
+          </select>
+        </div>
+        <div style="margin-left: auto;">
+          <span class="quiz-badge badge-web" id="admin-quiz-count">Loading Quizzes...</span>
+        </div>
+      </div>
+
+      <div class="data-table-card">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="width: 65px;">ID</th>
+              <th>Quiz Title</th>
+              <th>Module / Category</th>
+              <th>Questions</th>
+              <th>Time Limit</th>
+              <th>Difficulty</th>
+              <th style="text-align: right; width: 250px;">Management Actions</th>
+            </tr>
+          </thead>
+          <tbody id="admin-quiz-list">
+            <tr>
+              <td colspan="7" style="text-align: center; padding: 30px; color: var(--muted);">Loading quizzes...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB 2: Dynamic Multi-Question Quiz Builder -->
+    <div id="tab-add-quiz" class="tab-content">
+      <div style="max-width: 860px; margin: 0 auto;">
+        
+        <form id="create-quiz-full-form" onsubmit="handleCreateFullQuiz(event)">
+          
+          <!-- Card 1: Quiz Overview Details -->
+          <div class="form-card">
+            <h3 style="margin-bottom: 20px; color: var(--dark); font-size: 1.3rem; display: flex; align-items: center; gap: 10px;">
+              <i class="fa-solid fa-graduation-cap" style="color: var(--primary);"></i> Step 1: Quiz Information
+            </h3>
+            
+            <div class="form-group">
+              <label>Quiz Title <span style="color: var(--danger);">*</span></label>
+              <input type="text" id="full-quiz-title" class="form-control" placeholder="e.g. Distributed Systems & Cloud Computing" required>
+            </div>
+            
+            <div class="form-group">
+              <label>Description</label>
+              <textarea id="full-quiz-desc" class="form-control" rows="2" placeholder="Brief summary of what topics this quiz evaluates..."></textarea>
+            </div>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label>Academic Module / Category <span style="color: var(--danger);">*</span></label>
+                <select id="full-quiz-cat" class="form-control" required>
+                  <option value="web">EE4207: Web Application Development</option>
+                  <option value="java">CS201: Java & Object-Oriented Programming</option>
+                  <option value="db">IT104: Database Systems & SQL</option>
+                  <option value="general" selected>CS100: General Computer Science</option>
+                </select>
+              </div>
+              
+              <div class="form-group">
+                <label>Time Limit (Minutes) <span style="color: var(--danger);">*</span></label>
+                <input type="number" id="full-quiz-time" class="form-control" value="5" min="1" max="180" required>
+              </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0;">
+              <label>Difficulty Level</label>
+              <select id="full-quiz-diff" class="form-control">
+                <option value="Easy">Easy</option>
+                <option value="Medium" selected>Medium</option>
+                <option value="Hard">Hard</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Card 2: Dynamic Questions Builder -->
+          <div style="margin-top: 30px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+              <div>
+                <h3 style="color: var(--dark); font-size: 1.3rem; display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
+                  <i class="fa-solid fa-layer-group" style="color: var(--primary);"></i> Step 2: Multiple Choice Questions (MCQs)
+                </h3>
+                <p style="color: var(--muted); font-size: 0.9rem;">Add multiple questions for this quiz dynamically on the same page</p>
+              </div>
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <span class="quiz-badge badge-web" id="q-count-badge" style="font-size: 0.85rem; padding: 6px 14px;">
+                  Total Questions: 1
+                </span>
+                <button type="button" class="btn btn-secondary" onclick="addQuestionBlock()" style="width: auto; padding: 8px 16px;">
+                  <i class="fa-solid fa-plus-circle" style="color: var(--primary);"></i> Add Question
+                </button>
+              </div>
+            </div>
+
+            <!-- Dynamic Question Blocks Container -->
+            <div id="dynamic-questions-container">
+              <!-- Question blocks injected via JavaScript -->
+            </div>
+
+            <!-- Submit Section -->
+            <div style="margin-top: 30px; text-align: right; background: var(--card-bg); padding: 20px; border-radius: var(--radius-md); border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+              <div>
+                <span style="font-size: 0.9rem; color: var(--muted);">Ready to publish this assessment to MySQL via 3NF backend?</span>
+              </div>
+              <div style="display: flex; gap: 12px;">
+                <button type="button" class="btn btn-secondary" onclick="switchTab('manage-quizzes')">Cancel</button>
+                <button type="submit" id="btn-submit-full-quiz" class="btn btn-primary" style="padding: 12px 28px;">
+                  <i class="fa-solid fa-cloud-arrow-up"></i> Save & Publish Quiz (POST)
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </form>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Modal: Quiz Questions & Answer Key Manager -->
+  <div id="questions-modal" class="modal-overlay">
+    <div class="modal-card" style="max-width: 820px;">
+      <div class="modal-header-custom lecturer-modal-header">
+        <div>
+          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
+            <h3 style="margin: 0; font-size: 1.25rem; color: #ffffff;">
+              <i class="fa-solid fa-layer-group" style="color: #c084fc;"></i>
+              <span id="modal-q-quiz-title">Quiz Title</span>
+            </h3>
+            <span id="modal-q-quiz-cat" class="quiz-badge badge-web">CATEGORY</span>
+          </div>
+          <p style="margin: 0; font-size: 0.85rem; color: rgba(255, 255, 255, 0.85);">Quiz #<span id="modal-q-quiz-id"></span> &bull; Manage Questions, Correct Answer Keys & Add New MCQs</p>
+        </div>
+        <button class="modal-close-btn" onclick="closeQuestionsModal()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="modal-body-custom" style="padding: 24px;">
+        
+        <!-- Action Toolbar -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 12px;">
+          <div>
+            <span class="quiz-badge badge-web" id="modal-q-total-badge" style="font-size: 0.88rem; padding: 6px 14px;">
+              <i class="fa-solid fa-layer-group"></i> Total Questions: 0
+            </span>
+          </div>
+          <div>
+            <button type="button" class="btn btn-primary" onclick="toggleAddQuestionForm()" id="btn-toggle-add-q" style="padding: 8px 16px; font-size: 0.9rem;">
+              <i class="fa-solid fa-plus-circle"></i> Add Question to this Quiz
+            </button>
+          </div>
+        </div>
+
+        <!-- Collapsible Inline Add Question Form -->
+        <div id="inline-add-q-card" style="display: none; background: var(--card-bg); border: 2px solid var(--primary); border-radius: var(--radius-md); padding: 20px; margin-bottom: 22px; box-shadow: 0 4px 20px rgba(139, 92, 246, 0.18);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; border-bottom: 1px solid var(--border); padding-bottom: 8px;">
+            <strong style="color: var(--primary); font-size: 1.05rem;">
+              <i class="fa-solid fa-plus-circle"></i> Add New MCQ to this Quiz
+            </strong>
+            <button type="button" onclick="toggleAddQuestionForm()" style="background: none; border: none; color: var(--muted); cursor: pointer; font-size: 1rem;">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+
+          <form id="inline-add-q-form" onsubmit="handleInlineAddQuestion(event)">
+            <div class="form-group">
+              <label>Question Statement <span style="color: var(--danger);">*</span></label>
+              <textarea id="inline-q-text" class="form-control" rows="2" placeholder="Write question statement clearly..." required></textarea>
+            </div>
+
+            <div style="margin-bottom: 8px;">
+              <label style="font-weight: 600; font-size: 0.85rem;">Options & Correct Answer <span style="color: var(--danger);">*</span></label>
+              <p style="font-size: 0.78rem; color: var(--muted); margin: 0 0 10px 0;">Select the radio button next to the correct answer option</p>
+            </div>
+
+            <div class="q-options-grid">
+              <div class="option-row" style="background: var(--card-bg); padding: 8px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border); display: flex; align-items: center; gap: 8px;">
+                <input type="radio" name="inline-correct-radio" value="A" checked title="Option A is correct">
+                <strong style="color: var(--primary);">A:</strong>
+                <input type="text" id="inline-q-optA" class="form-control" placeholder="Option A text" required style="padding: 6px 10px; font-size: 0.88rem;">
+              </div>
+              <div class="option-row" style="background: var(--card-bg); padding: 8px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border); display: flex; align-items: center; gap: 8px;">
+                <input type="radio" name="inline-correct-radio" value="B" title="Option B is correct">
+                <strong style="color: var(--primary);">B:</strong>
+                <input type="text" id="inline-q-optB" class="form-control" placeholder="Option B text" required style="padding: 6px 10px; font-size: 0.88rem;">
+              </div>
+              <div class="option-row" style="background: var(--card-bg); padding: 8px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border); display: flex; align-items: center; gap: 8px;">
+                <input type="radio" name="inline-correct-radio" value="C" title="Option C is correct">
+                <strong style="color: var(--primary);">C:</strong>
+                <input type="text" id="inline-q-optC" class="form-control" placeholder="Option C text" required style="padding: 6px 10px; font-size: 0.88rem;">
+              </div>
+              <div class="option-row" style="background: var(--card-bg); padding: 8px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border); display: flex; align-items: center; gap: 8px;">
+                <input type="radio" name="inline-correct-radio" value="D" title="Option D is correct">
+                <strong style="color: var(--primary);">D:</strong>
+                <input type="text" id="inline-q-optD" class="form-control" placeholder="Option D text" required style="padding: 6px 10px; font-size: 0.88rem;">
+              </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 12px;">
+              <label style="font-size: 0.85rem;">Explanation (Optional feedback)</label>
+              <input type="text" id="inline-q-exp" class="form-control" placeholder="Brief rationale why this answer is correct">
+            </div>
+
+            <div style="text-align: right; display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px;">
+              <button type="button" class="btn btn-secondary-outline" onclick="toggleAddQuestionForm()" style="padding: 8px 16px;">Cancel</button>
+              <button type="submit" id="btn-save-inline-q" class="btn btn-primary" style="padding: 8px 20px;">
+                <i class="fa-solid fa-floppy-disk"></i> Save Question to Database (POST)
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Questions List Container -->
+        <div id="modal-questions-container" style="max-height: 520px; overflow-y: auto; padding-right: 4px;">
+          <!-- Loaded dynamically via JS -->
+        </div>
+
+      </div>
+
+      <div class="modal-footer-custom" style="padding: 16px 24px; display: flex; justify-content: flex-end;">
+        <button type="button" class="btn btn-primary" onclick="closeQuestionsModal()" style="padding: 8px 24px;">
+          <i class="fa-solid fa-check"></i> Done
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Edit Quiz Details -->
+  <div id="edit-quiz-modal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header-custom lecturer-modal-header">
+        <h3 style="color: #ffffff;"><i class="fa-solid fa-pen-to-square" style="color: #c084fc;"></i> Edit Quiz Assessment</h3>
+        <button class="modal-close-btn" onclick="closeEditQuizModal()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form id="edit-quiz-form" onsubmit="handleUpdateQuiz(event)">
+        <div class="modal-body-custom">
+          <input type="hidden" id="edit-quiz-id">
+          
+          <div class="form-group">
+            <label>Quiz Title <span style="color: var(--danger);">*</span></label>
+            <input type="text" id="edit-quiz-title" class="form-control" required placeholder="e.g. Distributed Systems & Cloud Computing">
+          </div>
+
+          <div class="form-group">
+            <label>Description</label>
+            <textarea id="edit-quiz-desc" class="form-control" rows="2" placeholder="Brief summary of topics covered..."></textarea>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Academic Module / Category <span style="color: var(--danger);">*</span></label>
+              <select id="edit-quiz-cat" class="form-control" required>
+                <option value="web">EE4207: Web Application Development</option>
+                <option value="java">CS201: Java & Object-Oriented Programming</option>
+                <option value="db">IT104: Database Systems & SQL</option>
+                <option value="general">CS100: General Computer Science</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label>Time Limit (Minutes) <span style="color: var(--danger);">*</span></label>
+              <input type="number" id="edit-quiz-time" class="form-control" min="1" max="180" required>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 0;">
+            <label>Difficulty Level</label>
+            <select id="edit-quiz-diff" class="form-control">
+              <option value="Easy">Easy</option>
+              <option value="Medium">Medium</option>
+              <option value="Hard">Hard</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer-custom">
+          <button type="button" class="btn btn-secondary-outline" onclick="closeEditQuizModal()">Cancel</button>
+          <button type="submit" id="btn-save-quiz-edit" class="btn btn-primary">
+            <i class="fa-solid fa-check"></i> Save & Update Quiz (PUT)
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Safe Delete Confirmation -->
+  <div id="delete-quiz-modal" class="modal-overlay">
+    <div class="modal-card" style="max-width: 480px;">
+      <div class="modal-header-custom" style="border-bottom-color: rgba(239, 68, 68, 0.2);">
+        <h3 style="color: var(--danger);"><i class="fa-solid fa-triangle-exclamation"></i> Confirm Delete Quiz</h3>
+        <button class="modal-close-btn" onclick="closeSafeDeleteModal()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body-custom">
+        <input type="hidden" id="delete-target-id">
+        <p style="margin-bottom: 14px; font-size: 1rem; color: var(--dark);">
+          Are you sure you want to permanently delete this quiz assessment?
+        </p>
+        <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: var(--radius-sm); padding: 12px 16px; margin-bottom: 16px;">
+          <p style="color: #991b1b; font-weight: 600; margin: 0 0 4px 0;" id="delete-quiz-name-display">Quiz Name</p>
+          <p style="color: #b91c1c; font-size: 0.85rem; margin: 0;">
+            <i class="fa-solid fa-circle-exclamation"></i> Cascade action: All associated MCQ questions and student attempt records will also be removed.
+          </p>
+        </div>
+      </div>
+      <div class="modal-footer-custom">
+        <button type="button" class="btn btn-secondary-outline" onclick="closeSafeDeleteModal()">Cancel</button>
+        <button type="button" id="btn-confirm-delete" class="btn btn-danger" onclick="executeSafeDelete()">
+          <i class="fa-solid fa-trash-can"></i> Yes, Delete Quiz (DELETE)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Instructor Mode Profile & Privilege Console -->
+  <div id="instructor-modal" class="modal-overlay">
+    <div class="modal-card" style="max-width: 580px;">
+      <div class="modal-header-custom lecturer-modal-header">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div style="width: 44px; height: 44px; border-radius: 12px; background: linear-gradient(135deg, #7c3aed, #a855f7); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; box-shadow: 0 4px 12px rgba(124, 58, 237, 0.35);">
+            <i class="fa-solid fa-user-shield"></i>
+          </div>
+          <div>
+            <h3 style="margin: 0; font-size: 1.25rem; color: #ffffff;">Instructor & Admin Console</h3>
+            <p style="margin: 2px 0 0 0; font-size: 0.85rem; color: rgba(255, 255, 255, 0.85);">Authorized Academic Staff & Examiner Authority</p>
+          </div>
+        </div>
+        <button class="modal-close-btn" onclick="closeInstructorModal()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="modal-body-custom" style="padding: 24px;">
+        <!-- Instructor Identity Card -->
+        <div class="instructor-profile-box">
+          <div style="width: 52px; height: 52px; border-radius: 50%; background: #7c3aed; color: white; display: flex; align-items: center; justify-content: center; font-size: 1.45rem; flex-shrink: 0; box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);">
+            <i class="fa-solid fa-chalkboard-user"></i>
+          </div>
+          <div style="flex: 1;">
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+              <h4 style="margin: 0; font-size: 1.1rem;">Faculty Lecturer / Examiner</h4>
+              <span class="quiz-badge" style="background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); font-size: 0.75rem; padding: 3px 8px;">
+                <i class="fa-solid fa-circle-check"></i> Mode Active
+              </span>
+            </div>
+            <p style="margin: 4px 0 0 0; font-size: 0.85rem;">
+              Full administrative privileges over quiz creation, question banks, and live student evaluations.
+            </p>
+          </div>
+        </div>
+
+        <!-- Privileges Matrix -->
+        <div style="margin-bottom: 22px;">
+          <h5 style="margin: 0 0 10px 0; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">Active Privileges</h5>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div class="privilege-pill">
+              <i class="fa-solid fa-check" style="color: #10b981;"></i> Quiz CRUD Operations
+            </div>
+            <div class="privilege-pill">
+              <i class="fa-solid fa-check" style="color: #10b981;"></i> Question Bank Authoring
+            </div>
+            <div class="privilege-pill">
+              <i class="fa-solid fa-check" style="color: #10b981;"></i> Anti-Cheat Exam Audit
+            </div>
+            <div class="privilege-pill">
+              <i class="fa-solid fa-check" style="color: #10b981;"></i> 3NF MySQL Database Sync
+            </div>
+          </div>
+        </div>
+
+        <!-- Instructor Quick Actions -->
+        <div>
+          <h5 style="margin: 0 0 10px 0; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">Quick Actions</h5>
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            <button type="button" class="btn btn-primary" onclick="quickActionGo('add-quiz')" style="justify-content: flex-start; padding: 12px 18px; width: 100%;">
+              <i class="fa-solid fa-folder-plus" style="font-size: 1.1rem; width: 22px;"></i>
+              <span>Create New Quiz (Multi-Question Builder)</span>
+            </button>
+            <button type="button" class="instructor-action-btn" onclick="quickActionGo('manage-quizzes')">
+              <i class="fa-solid fa-list-check" style="font-size: 1.1rem; width: 22px; color: #8b5cf6;"></i>
+              <span>Manage Quizzes & Questions</span>
+            </button>
+            <a href="index.html" class="instructor-action-btn">
+              <i class="fa-solid fa-eye" style="font-size: 1.1rem; width: 22px; color: #10b981;"></i>
+              <span>Switch to Student View (Preview System)</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer-custom" style="padding: 16px 24px; display: flex; justify-content: flex-end;">
+        <button type="button" class="btn btn-primary" onclick="closeInstructorModal()" style="width: auto; padding: 10px 22px;">
+          <i class="fa-solid fa-circle-check"></i> Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer (Purple Theme QuizMaster Platform) -->
+  <footer class="site-footer">
+    <div class="container footer-container">
+      <div class="footer-grid">
+        
+        <!-- Left Column: QuizMaster Platform Info -->
+        <div class="footer-about">
+          <div class="footer-logos">
+            <img src="images/quizmaster-badge.svg" alt="QuizMaster Logo" class="footer-badge-logo">
+          </div>
+          <p class="footer-desc">
+            QuizMaster is an interactive digital assessment and online examination platform designed for contemporary educational institutions and skill evaluations. Featuring automated grading, real-time analytics, question bank management, and anti-cheat exam monitoring to empower students and instructors worldwide.
+          </p>
+        </div>
+
+        <!-- Right Column: Contact Us (Purple Theme) -->
+        <div class="footer-contact">
+          <h3 class="footer-contact-title">
+            <i class="fa-solid fa-headset" style="font-size: 1.15rem; margin-right: 8px;"></i> Contact Us
+          </h3>
+          <p class="footer-contact-address">
+            QuizMaster Learning Technologies, Tech Hub Center, Colombo, Sri Lanka.
+          </p>
+          <div class="footer-contact-list">
+            <div class="footer-contact-item">
+              <i class="fa-solid fa-phone"></i>
+              <span>Hotline : +(94) 11 234 5678 / +(94) 77 890 1234</span>
+            </div>
+            <div class="footer-contact-item">
+              <i class="fa-solid fa-envelope"></i>
+              <span>Email : <a href="mailto:support@quizmaster.edu.lk">support@quizmaster.edu.lk</a></span>
+            </div>
+            <div class="footer-contact-item">
+              <i class="fa-solid fa-clock"></i>
+              <span>Hours : Mon – Fri 8:30 AM – 5:30 PM (24/7 Live Monitoring)</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Bottom Bar -->
+      <div class="footer-bottom-bar">
+        <p>&copy; 2026 QuizMaster Online Assessment System. All Rights Reserved.</p>
+        <div class="footer-bottom-links">
+          <span>Privacy Policy</span> &bull; 
+          <span>Terms of Service</span> &bull; 
+          <span>Instructor Console</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/api.js"></script>
+  <script>
+    let quizzes = [];
+    let questionCounter = 0;
+    let currentManagingQuizId = null;
+
+    // ─── Auth: Lecturer Gate via QuizApi session ─────────────────
+    const LECTURER_STORAGE_KEY = 'qm_lecturer_logged_in';
+    const LECTURER_INFO_KEY = 'qm_lecturer_info';
+
+    function isLecturerLoggedIn() {
+      // Check new session-based auth first
+      const session = QuizApi.getSession ? QuizApi.getSession() : null;
+      if (session && session.role === 'lecturer') return true;
+      // Legacy sessionStorage fallback
+      return sessionStorage.getItem(LECTURER_STORAGE_KEY) === 'true';
+    }
+
+    function getLecturerInfo() {
+      const session = QuizApi.getSession ? QuizApi.getSession() : null;
+      if (session && session.role === 'lecturer') {
+        return {
+          staffId: session.identifier || 'LEC-4307',
+          name: session.name || 'Dr. N. Fernando',
+          email: session.email || '',
+          dept: 'Faculty of Computing & Information Engineering',
+          role: 'Module Coordinator'
+        };
+      }
+      const raw = sessionStorage.getItem(LECTURER_INFO_KEY);
+      if (raw) try { return JSON.parse(raw); } catch(e) {}
+      return { staffId: 'LEC-4307', name: 'Dr. N. Fernando', email: '', dept: 'Faculty of Computing & Information Engineering', role: 'Module Coordinator' };
+    }
+
+    function setLecturerLoggedIn(staffId, name) {
+      sessionStorage.setItem(LECTURER_STORAGE_KEY, 'true');
+      sessionStorage.setItem(LECTURER_INFO_KEY, JSON.stringify({
+        staffId: staffId || 'LEC-4307',
+        name: name || 'Dr. N. Fernando',
+        dept: 'Faculty of Computing & Information Engineering',
+        role: 'Module Coordinator'
+      }));
+    }
+
+    function updateAuthUI() {
+      const loggedIn = isLecturerLoggedIn();
+      const info = getLecturerInfo();
+      const gate = document.getElementById('lecturer-auth-gate');
+      const main = document.getElementById('admin-main-content');
+      const navLinks = document.getElementById('admin-nav-links');
+      const navUser = document.getElementById('admin-nav-user');
+      const gateNavRight = document.getElementById('gate-nav-right');
+
+      if (loggedIn) {
+        if (gate) gate.style.display = 'none';
+        if (main) main.style.display = 'block';
+        if (navLinks) navLinks.style.display = 'flex';
+        if (navUser) navUser.style.display = 'flex';
+        if (gateNavRight) gateNavRight.style.display = 'none';
+
+        // Update nav display with real user info
+        const nameEl = document.getElementById('nav-lecturer-name');
+        if (nameEl) nameEl.textContent = info.name;
+
+        // Load data once authenticated
+        if (!quizzes || quizzes.length === 0) {
+          loadAdminData();
+        }
+      } else {
+        if (gate) gate.style.display = 'flex';
+        if (main) main.style.display = 'none';
+        if (navLinks) navLinks.style.display = 'none';
+        if (navUser) navUser.style.display = 'none';
+        if (gateNavRight) gateNavRight.style.display = 'flex';
+        populateGateEmailSuggestions();
+      }
+    }
+
+    // ─── Lecturer Email Auto-Suggestion & History ─────────
+    function populateGateEmailSuggestions() {
+      if (typeof QuizApi === 'undefined' || !QuizApi.getEmailHistory) return;
+      const history = QuizApi.getEmailHistory('lecturer');
+      const datalist = document.getElementById('gate-email-suggestions');
+      const quickBox = document.getElementById('gate-email-quick-suggestions');
+      const emailInput = document.getElementById('gate-staff-id');
+
+      if (datalist) {
+        datalist.innerHTML = history.map(email => `<option value="${email}"></option>`).join('');
+      }
+
+      const lastEmail = QuizApi.getLastEmail('lecturer') || (history.length > 0 ? history[0] : 'lecturer@quizmaster.lk');
+      if (emailInput && !emailInput.value) {
+        emailInput.value = lastEmail;
+      }
+
+      if (quickBox) {
+        if (history && history.length > 0) {
+          quickBox.innerHTML = `
+            <span style="font-size: 0.74rem; color: var(--muted); align-self: center; display: inline-flex; align-items: center; gap: 4px;">
+              <i class="fa-solid fa-clock-rotate-left" style="color: #7c3aed;"></i> Previous:
+            </span>` +
+            history.slice(0, 3).map(email => `
+              <button type="button" class="recent-email-pill" onclick="selectGateSuggestedEmail('${email}')" title="Click to auto-fill ${email}">
+                ${email}
+              </button>
+            `).join('');
+        } else {
+          quickBox.innerHTML = '';
+        }
+      }
+    }
+
+    function selectGateSuggestedEmail(email) {
+      const input = document.getElementById('gate-staff-id');
+      if (input) {
+        input.value = email;
+        const pw = document.getElementById('gate-passcode');
+        if (pw) pw.focus();
+      }
+    }
+
+    async function handleLecturerLogin(e) {
+      if (e) e.preventDefault();
+      const staffId = (document.getElementById('gate-staff-id').value || '').trim();
+      const pass = (document.getElementById('gate-passcode').value || '').trim();
+      const errEl = document.getElementById('gate-error-msg');
+      const btn = document.getElementById('btn-gate-login');
+
+      if (!staffId || !pass) {
+        if (errEl) { errEl.style.display = 'block'; errEl.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i> Please enter your Staff ID and password.'; }
+        return;
+      }
+
+      if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Verifying...'; }
+
+      // Try email-based auth first (new system)
+      const emailInput = staffId.includes('@') ? staffId : null;
+      let authResult = null;
+
+      if (emailInput) {
+        authResult = await QuizApi.loginAuth({ email: emailInput, password: pass, role: 'lecturer' });
+      } else {
+        // Try as password-only with the gate-staff-id as identifier
+        // Legacy passcode check
+        if (pass === 'admin123' || pass === '2026' || pass === 'admin' || pass === 'pass') {
+          authResult = { success: true, user: { name: 'Dr. N. Fernando', email: 'lecturer@quizmaster.lk', role: 'lecturer', identifier: staffId } };
+        } else {
+          // Try email lookup fallback by querying the auth
+          authResult = await QuizApi.loginAuth({ email: 'lecturer@quizmaster.lk', password: pass, role: 'lecturer' });
+        }
+      }
+
+      if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-unlock-keyhole"></i> Unlock Lecturer Console'; }
+
+      if (authResult && authResult.success) {
+        if (errEl) errEl.style.display = 'none';
+        if (emailInput && QuizApi.saveEmailHistory) QuizApi.saveEmailHistory('lecturer', emailInput);
+        if (authResult.user) QuizApi.saveSession(authResult.user);
+        setLecturerLoggedIn(authResult.user ? authResult.user.identifier : staffId, authResult.user ? authResult.user.name : 'Dr. N. Fernando');
+        updateAuthUI();
+      } else {
+        if (errEl) {
+          errEl.style.display = 'block';
+          errEl.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i> ${authResult ? authResult.message : 'Authentication failed. Please try again.'}`;
+        }
+      }
+    }
+
+    function quickLecturerDemoLogin() {
+      setLecturerLoggedIn('LEC-4307', 'Dr. N. Fernando');
+      updateAuthUI();
+    }
+
+    function handleLecturerLogout() {
+      QuizApi.clearSession();
+      sessionStorage.removeItem(LECTURER_STORAGE_KEY);
+      sessionStorage.removeItem(LECTURER_INFO_KEY);
+      updateAuthUI();
+    }
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+      const targetBtn = Array.from(document.querySelectorAll('.tab-btn')).find(b => {
+        const fn = b.getAttribute('onclick') || '';
+        return fn.includes(tabId);
+      });
+      if (targetBtn) {
+        targetBtn.classList.add('active');
+      }
+
+      const content = document.getElementById(`tab-${tabId}`);
+      if (content) {
+        content.classList.add('active');
+      }
+    }
+
+    async function loadAdminData() {
+      quizzes = await QuizApi.getQuizzes();
+      renderAdminQuizList();
+
+      // Fetch questions count for each quiz in parallel
+      if (quizzes && quizzes.length > 0) {
+        Promise.all(quizzes.map(async q => {
+          try {
+            const qList = await QuizApi.getQuestions(q.id);
+            q.questionsCount = qList ? qList.length : 0;
+            const el = document.getElementById(`quiz-qcount-${q.id}`);
+            if (el) {
+              el.innerHTML = `<i class="fa-solid fa-layer-group"></i> ${q.questionsCount} MCQs`;
+            }
+          } catch(e) {}
+        }));
+      }
+    }
+
+    // SEARCH, MODULE FILTER & SORT HANDLERS
+    function handleAdminSearch() {
+      const q = (document.getElementById('admin-quiz-search').value || '').trim().toLowerCase();
+      const mod = document.getElementById('admin-module-filter') ? document.getElementById('admin-module-filter').value : 'ALL';
+      let filtered = quizzes.filter(quiz => {
+        const titleMatch = (quiz.title || '').toLowerCase().includes(q);
+        const catMatch = (quiz.category || '').toLowerCase().includes(q);
+        const descMatch = (quiz.description || '').toLowerCase().includes(q);
+        const textMatch = titleMatch || catMatch || descMatch;
+        const modMatch = (mod === 'ALL') || (quiz.category && quiz.category.toLowerCase() === mod.toLowerCase());
+        return textMatch && modMatch;
+      });
+      applyAdminSort(filtered);
+    }
+
+    function handleAdminFilter() {
+      handleAdminSearch();
+    }
+
+    function handleAdminSort() {
+      handleAdminSearch();
+    }
+
+    function applyAdminSort(list) {
+      const sortVal = document.getElementById('admin-quiz-sort').value;
+      const sorted = [...list].sort((a, b) => {
+        switch (sortVal) {
+          case 'id-asc':
+            return (a.id || 0) - (b.id || 0);
+          case 'id-desc':
+            return (b.id || 0) - (a.id || 0);
+          case 'title-asc':
+            return (a.title || '').localeCompare(b.title || '');
+          case 'time-desc':
+            return (b.timeLimit || 0) - (a.timeLimit || 0);
+          default:
+            return 0;
+        }
+      });
+      renderAdminQuizList(sorted);
+    }
+
+    function renderAdminQuizList(listToRender) {
+      const displayQuizzes = listToRender !== undefined ? listToRender : quizzes;
+      const countEl = document.getElementById('admin-quiz-count');
+      if (countEl) {
+        countEl.innerText = `${displayQuizzes.length} OF ${quizzes.length} QUIZZES`;
+      }
+
+      const tbody = document.getElementById('admin-quiz-list');
+      if (!displayQuizzes || displayQuizzes.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" style="text-align: center; padding: 40px; color: var(--muted);">
+              <i class="fa-solid fa-magnifying-glass" style="font-size: 1.8rem; margin-bottom: 10px; display: block; opacity: 0.5;"></i>
+              No matching quizzes found for this module or query. Try adjusting your filter.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = displayQuizzes.map(q => {
+        const badgeClass = `badge-${q.category || 'general'}`;
+        const qCountText = q.questionsCount !== undefined ? `${q.questionsCount} MCQs` : 'Loading...';
+
+        let moduleCode = 'CS100';
+        if (q.category === 'web') moduleCode = 'EE4207';
+        else if (q.category === 'java') moduleCode = 'CS201';
+        else if (q.category === 'db') moduleCode = 'IT104';
+
+        return `
+          <tr>
+            <td style="font-weight: 700; color: var(--muted);">#${q.id}</td>
+            <td>
+              <div style="font-weight: 600; color: var(--dark); font-size: 0.98rem;">${q.title}</div>
+              <small style="color: var(--muted);">${q.description ? (q.description.substring(0, 50) + '...') : 'No description'}</small>
+            </td>
+            <td>
+              <span class="quiz-badge ${badgeClass}" style="display: inline-flex; align-items: center; gap: 4px;">
+                <i class="fa-solid fa-book-bookmark"></i> ${moduleCode} &bull; ${(q.category || 'general').toUpperCase()}
+              </span>
+            </td>
+            <td>
+              <span class="quiz-badge badge-web" id="quiz-qcount-${q.id}" style="font-size: 0.8rem; font-weight: 600;">
+                <i class="fa-solid fa-layer-group"></i> ${qCountText}
+              </span>
+            </td>
+            <td><i class="fa-regular fa-clock" style="color: var(--primary);"></i> ${q.timeLimit} mins</td>
+            <td><span style="font-size: 0.85rem; font-weight: 600;">${q.difficulty || 'Medium'}</span></td>
+            <td style="text-align: right;">
+              <button class="btn btn-primary" onclick="openQuestionsModal(${q.id})" style="padding: 6px 12px; font-size: 0.82rem; margin-right: 6px;" title="View and Manage Questions for this Quiz">
+                <i class="fa-solid fa-circle-question"></i> Questions
+              </button>
+              <button class="btn btn-secondary-outline" onclick="openEditQuizModal(${q.id})" style="padding: 6px 12px; font-size: 0.82rem; margin-right: 6px;" title="Edit Quiz Details">
+                <i class="fa-solid fa-pen-to-square"></i> Edit
+              </button>
+              <button class="btn btn-danger" onclick="openSafeDeleteModal(${q.id}, '${(q.title || '').replace(/'/g, "\\'")}')" style="padding: 6px 10px; font-size: 0.82rem;" title="Delete Quiz Assessment">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // DYNAMIC QUESTION BUILDER (IN CREATE QUIZ TAB)
+    function addQuestionBlock() {
+      questionCounter++;
+      const container = document.getElementById('dynamic-questions-container');
+      const blockId = `q-block-${questionCounter}`;
+
+      const card = document.createElement('div');
+      card.className = 'form-card question-builder-card';
+      card.id = blockId;
+      card.style.marginBottom = '20px';
+      card.style.borderLeft = '4px solid var(--primary)';
+      card.style.position = 'relative';
+
+      card.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 10px;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span class="q-num-badge" style="background: var(--primary-light); color: var(--primary); font-weight: 700; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.85rem;">
+              ${document.querySelectorAll('.question-builder-card').length + 1}
+            </span>
+            <strong style="color: var(--dark); font-size: 1.05rem;" class="q-card-title">Question</strong>
+          </div>
+          <button type="button" class="btn btn-danger" onclick="removeQuestionBlock('${blockId}')" style="width: auto; padding: 4px 10px; font-size: 0.8rem;" title="Remove this question">
+            <i class="fa-solid fa-trash"></i> Remove
+          </button>
+        </div>
+
+        <div class="form-group">
+          <label>Question Text <span style="color: var(--danger);">*</span></label>
+          <textarea class="form-control q-text" rows="2" placeholder="Write question statement clearly..." required></textarea>
+        </div>
+
+        <div style="margin-bottom: 10px;">
+          <label style="font-weight: 600; font-size: 0.85rem; color: var(--dark);">Answer Options & Correct Key <span style="color: var(--danger);">*</span></label>
+          <p style="font-size: 0.78rem; color: var(--muted); margin-bottom: 12px;">Type 4 options and select which one is the correct answer</p>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+          <div class="option-row" style="background: #f8fafc; padding: 10px 14px; border-radius: var(--radius-sm); border: 1px solid var(--border); display: flex; align-items: center; gap: 10px;">
+            <input type="radio" name="correct-radio-${questionCounter}" value="A" checked title="Mark Option A as correct">
+            <span style="font-weight: 700; color: var(--primary); font-size: 0.9rem;">A:</span>
+            <input type="text" class="form-control q-opt-a" placeholder="Option A text" required style="padding: 6px 10px; font-size: 0.9rem;">
+          </div>
+
+          <div class="option-row" style="background: #f8fafc; padding: 10px 14px; border-radius: var(--radius-sm); border: 1px solid var(--border); display: flex; align-items: center; gap: 10px;">
+            <input type="radio" name="correct-radio-${questionCounter}" value="B" title="Mark Option B as correct">
+            <span style="font-weight: 700; color: var(--primary); font-size: 0.9rem;">B:</span>
+            <input type="text" class="form-control q-opt-b" placeholder="Option B text" required style="padding: 6px 10px; font-size: 0.9rem;">
+          </div>
+
+          <div class="option-row" style="background: #f8fafc; padding: 10px 14px; border-radius: var(--radius-sm); border: 1px solid var(--border); display: flex; align-items: center; gap: 10px;">
+            <input type="radio" name="correct-radio-${questionCounter}" value="C" title="Mark Option C as correct">
+            <span style="font-weight: 700; color: var(--primary); font-size: 0.9rem;">C:</span>
+            <input type="text" class="form-control q-opt-c" placeholder="Option C text" required style="padding: 6px 10px; font-size: 0.9rem;">
+          </div>
+
+          <div class="option-row" style="background: #f8fafc; padding: 10px 14px; border-radius: var(--radius-sm); border: 1px solid var(--border); display: flex; align-items: center; gap: 10px;">
+            <input type="radio" name="correct-radio-${questionCounter}" value="D" title="Mark Option D as correct">
+            <span style="font-weight: 700; color: var(--primary); font-size: 0.9rem;">D:</span>
+            <input type="text" class="form-control q-opt-d" placeholder="Option D text" required style="padding: 6px 10px; font-size: 0.9rem;">
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-top: 14px; margin-bottom: 0;">
+          <label style="font-size: 0.85rem;">Explanation (Optional feedback shown on review)</label>
+          <input type="text" class="form-control q-explanation" placeholder="Brief rationale why the selected answer is correct...">
+        </div>
+      `;
+
+      container.appendChild(card);
+      updateQuestionNumbers();
+    }
+
+    function removeQuestionBlock(blockId) {
+      const cards = document.querySelectorAll('.question-builder-card');
+      if (cards.length <= 1) {
+        alert('A quiz must contain at least one question.');
+        return;
+      }
+      const el = document.getElementById(blockId);
+      if (el) el.remove();
+      updateQuestionNumbers();
+    }
+
+    function updateQuestionNumbers() {
+      const cards = document.querySelectorAll('.question-builder-card');
+      const badge = document.getElementById('q-count-badge');
+      if (badge) badge.innerText = `Total Questions: ${cards.length}`;
+
+      cards.forEach((card, idx) => {
+        const numBadge = card.querySelector('.q-num-badge');
+        const title = card.querySelector('.q-card-title');
+        if (numBadge) numBadge.innerText = idx + 1;
+        if (title) title.innerText = `Question ${idx + 1}`;
+      });
+    }
+
+    // FULL QUIZ CREATION SUBMIT HANDLER
+    async function handleCreateFullQuiz(event) {
+      event.preventDefault();
+      const btn = document.getElementById('btn-submit-full-quiz');
+      const originalText = btn.innerHTML;
+
+      try {
+        const title = document.getElementById('full-quiz-title').value.trim();
+        const description = document.getElementById('full-quiz-desc').value.trim();
+        const category = document.getElementById('full-quiz-cat').value;
+        const timeLimit = parseInt(document.getElementById('full-quiz-time').value, 10);
+        const difficulty = document.getElementById('full-quiz-diff').value;
+
+        const cards = document.querySelectorAll('.question-builder-card');
+        if (cards.length === 0) {
+          alert('Please add at least one question to the quiz.');
+          return;
+        }
+
+        const questions = [];
+        cards.forEach((card, idx) => {
+          const qText = card.querySelector('.q-text').value.trim();
+          const optA = card.querySelector('.q-opt-a').value.trim();
+          const optB = card.querySelector('.q-opt-b').value.trim();
+          const optC = card.querySelector('.q-opt-c').value.trim();
+          const optD = card.querySelector('.q-opt-d').value.trim();
+          const checkedRadio = card.querySelector('input[type="radio"]:checked');
+          const correctAnswer = checkedRadio ? checkedRadio.value : 'A';
+          const explanation = card.querySelector('.q-explanation').value.trim();
+
+          questions.push({
+            questionText: qText,
+            optionA: optA,
+            optionB: optB,
+            optionC: optC,
+            optionD: optD,
+            correctAnswer: correctAnswer,
+            explanation: explanation
+          });
+        });
+
+        const payload = {
+          title: title,
+          description: description,
+          category: category,
+          timeLimit: timeLimit,
+          difficulty: difficulty,
+          questions: questions
+        };
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving to Database...';
+
+        const savedQuiz = await QuizApi.createFullQuiz(payload);
+        alert(`🎉 Success! Quiz "${savedQuiz.title || title}" and all ${questions.length} questions were successfully created and stored in the MySQL database.`);
+
+        document.getElementById('create-quiz-full-form').reset();
+        document.getElementById('dynamic-questions-container').innerHTML = '';
+        questionCounter = 0;
+        addQuestionBlock();
+
+        await loadAdminData();
+        switchTab('manage-quizzes');
+      } catch (err) {
+        console.error('Failed to create quiz:', err);
+        alert('Error creating quiz: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+      }
+    }
+
+    // QUESTIONS MANAGER MODAL HANDLERS
+    async function openQuestionsModal(quizId) {
+      currentManagingQuizId = quizId;
+      const quiz = quizzes.find(q => q.id === quizId);
+      if (!quiz) return;
+
+      document.getElementById('modal-q-quiz-id').innerText = quiz.id;
+      document.getElementById('modal-q-quiz-title').innerText = quiz.title;
+      const catBadge = document.getElementById('modal-q-quiz-cat');
+      catBadge.innerText = (quiz.category || 'general').toUpperCase();
+      catBadge.className = `quiz-badge badge-${quiz.category || 'general'}`;
+
+      // Reset inline add question form
+      const inlineCard = document.getElementById('inline-add-q-card');
+      inlineCard.style.display = 'none';
+      document.getElementById('btn-toggle-add-q').innerHTML = '<i class="fa-solid fa-plus-circle"></i> Add Question to this Quiz';
+
+      document.getElementById('questions-modal').classList.add('active');
+      await reloadQuestionsModalList(quizId);
+    }
+
+    function closeQuestionsModal() {
+      document.getElementById('questions-modal').classList.remove('active');
+      currentManagingQuizId = null;
+    }
+
+    function toggleAddQuestionForm() {
+      const card = document.getElementById('inline-add-q-card');
+      const btn = document.getElementById('btn-toggle-add-q');
+      if (card.style.display === 'none' || !card.style.display) {
+        card.style.display = 'block';
+        btn.innerHTML = '<i class="fa-solid fa-xmark"></i> Cancel Adding Question';
+        document.getElementById('inline-q-text').focus();
+      } else {
+        card.style.display = 'none';
+        btn.innerHTML = '<i class="fa-solid fa-plus-circle"></i> Add Question to this Quiz';
+        document.getElementById('inline-add-q-form').reset();
+      }
+    }
+
+    async function reloadQuestionsModalList(quizId) {
+      const container = document.getElementById('modal-questions-container');
+      container.innerHTML = '<div style="text-align: center; padding: 30px; color: var(--muted);"><i class="fa-solid fa-spinner fa-spin"></i> Loading questions...</div>';
+
+      try {
+        const questions = await QuizApi.getQuestions(quizId);
+        document.getElementById('modal-q-total-badge').innerHTML = `<i class="fa-solid fa-layer-group"></i> Total Questions: ${questions ? questions.length : 0}`;
+
+        // Update table badge as well
+        const countEl = document.getElementById(`quiz-qcount-${quizId}`);
+        if (countEl) {
+          countEl.innerHTML = `<i class="fa-solid fa-layer-group"></i> ${questions ? questions.length : 0} MCQs`;
+        }
+        const targetQuiz = quizzes.find(q => q.id === quizId);
+        if (targetQuiz) {
+          targetQuiz.questionsCount = questions ? questions.length : 0;
+        }
+
+        if (!questions || questions.length === 0) {
+          container.innerHTML = `
+            <div style="text-align: center; padding: 40px 20px; border: 2px dashed var(--border); border-radius: var(--radius-md); color: var(--muted);">
+              <i class="fa-solid fa-circle-question" style="font-size: 2.5rem; opacity: 0.4; margin-bottom: 12px; display: block;"></i>
+              <h4 style="margin: 0 0 6px 0; color: var(--dark);">No questions added to this quiz yet</h4>
+              <p style="margin: 0; font-size: 0.9rem;">Click the "Add Question to this Quiz" button above to add the first question!</p>
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = questions.map((q, idx) => {
+          const correctOpt = (q.correctAnswer || q.correctOption || 'A').toUpperCase();
+          return `
+            <div class="question-item-card">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 10px;">
+                <div style="display: flex; align-items: flex-start; gap: 10px;">
+                  <span style="background: var(--primary-light); color: var(--primary); font-weight: 700; width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.82rem; flex-shrink: 0; margin-top: 2px;">
+                    ${idx + 1}
+                  </span>
+                  <div>
+                    <strong style="color: var(--dark); font-size: 1rem; line-height: 1.4; display: block;">${q.questionText}</strong>
+                  </div>
+                </div>
+                <button class="btn btn-danger" onclick="handleDeleteQuestion(${q.id})" style="padding: 4px 10px; font-size: 0.78rem; width: auto; flex-shrink: 0;" title="Delete this question">
+                  <i class="fa-solid fa-trash"></i> Delete
+                </button>
+              </div>
+
+              <div class="q-options-grid">
+                <div class="q-option-badge ${correctOpt === 'A' ? 'correct' : ''}">
+                  <span><strong>A:</strong> ${q.optionA || ''}</span>
+                  ${correctOpt === 'A' ? '<span style="color: #10b981; font-size: 0.78rem;"><i class="fa-solid fa-circle-check"></i> Correct</span>' : ''}
+                </div>
+                <div class="q-option-badge ${correctOpt === 'B' ? 'correct' : ''}">
+                  <span><strong>B:</strong> ${q.optionB || ''}</span>
+                  ${correctOpt === 'B' ? '<span style="color: #10b981; font-size: 0.78rem;"><i class="fa-solid fa-circle-check"></i> Correct</span>' : ''}
+                </div>
+                <div class="q-option-badge ${correctOpt === 'C' ? 'correct' : ''}">
+                  <span><strong>C:</strong> ${q.optionC || ''}</span>
+                  ${correctOpt === 'C' ? '<span style="color: #10b981; font-size: 0.78rem;"><i class="fa-solid fa-circle-check"></i> Correct</span>' : ''}
+                </div>
+                <div class="q-option-badge ${correctOpt === 'D' ? 'correct' : ''}">
+                  <span><strong>D:</strong> ${q.optionD || ''}</span>
+                  ${correctOpt === 'D' ? '<span style="color: #10b981; font-size: 0.78rem;"><i class="fa-solid fa-circle-check"></i> Correct</span>' : ''}
+                </div>
+              </div>
+
+              ${q.explanation ? `
+                <div style="background: rgba(124, 58, 237, 0.08); border-left: 3px solid var(--primary); padding: 8px 12px; border-radius: 4px; font-size: 0.82rem; color: var(--muted); margin-top: 10px;">
+                  <strong style="color: var(--primary);"><i class="fa-solid fa-lightbulb"></i> Explanation:</strong> ${q.explanation}
+                </div>
+              ` : ''}
+            </div>
+          `;
+        }).join('');
+      } catch (err) {
+        container.innerHTML = `<div style="color: var(--danger); text-align: center; padding: 20px;">Failed to load questions: ${err.message}</div>`;
+      }
+    }
+
+    async function handleInlineAddQuestion(event) {
+      event.preventDefault();
+      if (!currentManagingQuizId) return;
+
+      const btn = document.getElementById('btn-save-inline-q');
+      const originalText = btn.innerHTML;
+
+      try {
+        const questionText = document.getElementById('inline-q-text').value.trim();
+        const optA = document.getElementById('inline-q-optA').value.trim();
+        const optB = document.getElementById('inline-q-optB').value.trim();
+        const optC = document.getElementById('inline-q-optC').value.trim();
+        const optD = document.getElementById('inline-q-optD').value.trim();
+        const checkedRadio = document.querySelector('input[name="inline-correct-radio"]:checked');
+        const correctAnswer = checkedRadio ? checkedRadio.value : 'A';
+        const explanation = document.getElementById('inline-q-exp').value.trim();
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+
+        const payload = {
+          quizId: currentManagingQuizId,
+          questionText: questionText,
+          optionA: optA,
+          optionB: optB,
+          optionC: optC,
+          optionD: optD,
+          correctAnswer: correctAnswer,
+          explanation: explanation
+        };
+
+        await QuizApi.createQuestion(payload);
+        document.getElementById('inline-add-q-form').reset();
+        toggleAddQuestionForm();
+        await reloadQuestionsModalList(currentManagingQuizId);
+      } catch (err) {
+        console.error('Failed to add question:', err);
+        alert('Error adding question: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+      }
+    }
+
+    async function handleDeleteQuestion(questionId) {
+      if (!confirm('Are you sure you want to delete this question?')) return;
+
+      try {
+        await QuizApi.deleteQuestion(questionId);
+        if (currentManagingQuizId) {
+          await reloadQuestionsModalList(currentManagingQuizId);
+        }
+      } catch (err) {
+        console.error('Failed to delete question:', err);
+        alert('Error deleting question: ' + err.message);
+      }
+    }
+
+    // UPDATE QUIZ MODAL HANDLERS
+    function openEditQuizModal(id) {
+      const q = quizzes.find(item => item.id === id);
+      if (!q) {
+        alert('Quiz not found with ID: ' + id);
+        return;
+      }
+
+      document.getElementById('edit-quiz-id').value = q.id;
+      document.getElementById('edit-quiz-title').value = q.title || '';
+      document.getElementById('edit-quiz-desc').value = q.description || '';
+      document.getElementById('edit-quiz-cat').value = q.category || 'general';
+      document.getElementById('edit-quiz-time').value = q.timeLimit || 5;
+      document.getElementById('edit-quiz-diff').value = q.difficulty || 'Medium';
+
+      document.getElementById('edit-quiz-modal').classList.add('active');
+      setTimeout(() => {
+        document.getElementById('edit-quiz-title').focus();
+      }, 100);
+    }
+
+    function closeEditQuizModal() {
+      document.getElementById('edit-quiz-modal').classList.remove('active');
+    }
+
+    async function handleUpdateQuiz(event) {
+      event.preventDefault();
+      const btn = document.getElementById('btn-save-quiz-edit');
+      const originalText = btn.innerHTML;
+
+      try {
+        const id = parseInt(document.getElementById('edit-quiz-id').value, 10);
+        const title = document.getElementById('edit-quiz-title').value.trim();
+        const description = document.getElementById('edit-quiz-desc').value.trim();
+        const category = document.getElementById('edit-quiz-cat').value;
+        const timeLimit = parseInt(document.getElementById('edit-quiz-time').value, 10);
+        const difficulty = document.getElementById('edit-quiz-diff').value;
+
+        if (!title) {
+          alert('Quiz Title is required.');
+          return;
+        }
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Updating Database (PUT)...';
+
+        const payload = {
+          title: title,
+          description: description,
+          category: category,
+          timeLimit: timeLimit,
+          difficulty: difficulty
+        };
+
+        await QuizApi.updateQuiz(id, payload);
+        alert(`Success! Quiz #${id} "${title}" has been successfully updated in the MySQL database.`);
+        closeEditQuizModal();
+        await loadAdminData();
+      } catch (err) {
+        console.error('Failed to update quiz:', err);
+        alert('Error updating quiz: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+      }
+    }
+
+    // SAFE DELETE MODAL HANDLERS
+    function openSafeDeleteModal(id, title) {
+      document.getElementById('delete-target-id').value = id;
+      document.getElementById('delete-quiz-name-display').innerText = `#${id} - ${title}`;
+      document.getElementById('delete-quiz-modal').classList.add('active');
+    }
+
+    function closeSafeDeleteModal() {
+      document.getElementById('delete-quiz-modal').classList.remove('active');
+    }
+
+    async function executeSafeDelete() {
+      const id = parseInt(document.getElementById('delete-target-id').value, 10);
+      const btn = document.getElementById('btn-confirm-delete');
+      const originalText = btn.innerHTML;
+
+      if (!id) return;
+
+      try {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Deleting...';
+
+        await QuizApi.deleteQuiz(id);
+        closeSafeDeleteModal();
+        alert(`Quiz #${id} was permanently deleted from MySQL.`);
+        await loadAdminData();
+      } catch (err) {
+        console.error('Error deleting quiz:', err);
+        alert('Failed to delete quiz: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+      }
+    }
+
+    // INSTRUCTOR MODAL HANDLERS
+    function openInstructorModal() {
+      document.getElementById('instructor-modal').classList.add('active');
+    }
+
+    function closeInstructorModal() {
+      document.getElementById('instructor-modal').classList.remove('active');
+    }
+
+    function quickActionGo(tabId) {
+      closeInstructorModal();
+      switchTab(tabId);
+    }
+
+    // Close modals on Escape key or backdrop click
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeEditQuizModal();
+        closeSafeDeleteModal();
+        closeInstructorModal();
+        closeQuestionsModal();
+      }
+    });
+
+    document.querySelectorAll('.modal-overlay').forEach(overlay => {
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) {
+          closeEditQuizModal();
+          closeSafeDeleteModal();
+          closeInstructorModal();
+          closeQuestionsModal();
+        }
+      });
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+      updateAuthUI();
+      // Initialize with 1 question block in Create Quiz tab
+      addQuestionBlock();
+    });
+  </script>
+
+  <!-- Dark Theme Toggle Script -->
+  <script>
+    (function() {
+      const body = document.getElementById('page-body');
+      const btn  = document.getElementById('theme-toggle-btn');
+      const icon = document.getElementById('theme-icon');
+      const DARK = 'dark-theme'; const KEY = 'qm-theme';
+      function applyTheme(isDark) {
+        body.classList.toggle(DARK, isDark);
+        icon.className = isDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+        localStorage.setItem(KEY, isDark ? 'dark' : 'light');
+      }
+      applyTheme(localStorage.getItem(KEY) === 'dark');
+      btn.addEventListener('click', function() { applyTheme(!body.classList.contains(DARK)); });
+    })();
+  </script>
+</body>
+</html>

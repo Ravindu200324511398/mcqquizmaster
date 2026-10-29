@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 84">
+  <defs>
+    <linearGradient id="purpleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4c1d95" />
+      <stop offset="50%" stop-color="#6d28d9" />
+      <stop offset="100%" stop-color="#7c3aed" />
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#c084fc" />
+      <stop offset="100%" stop-color="#f472b6" />
+    </linearGradient>
+    <filter id="purpleGlow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="2" stdDeviation="5" flood-color="#8b5cf6" flood-opacity="0.45"/>
+    </filter>
+  </defs>
+
+  <!-- Purple Banner Card -->
+  <rect x="2" y="2" width="396" height="80" rx="14" fill="url(#purpleGrad)" filter="url(#purpleGlow)" stroke="#a855f7" stroke-width="2"/>
+
+  <!-- Left Text: QUIZ (Bold, Big, High-Contrast) -->
+  <text x="96" y="53" text-anchor="middle" fill="#ffffff" font-family="'Segoe UI', Roboto, -apple-system, sans-serif" font-size="32" font-weight="900" letter-spacing="1.5">QUIZ</text>
+
+  <!-- Center Circle Crest -->
+  <g transform="translate(200, 42)">
+    <!-- Outer dashed glowing circle -->
+    <circle r="33" fill="#3b0764" stroke="#a855f7" stroke-width="2.2" stroke-dasharray="4,2"/>
+    <circle r="28" fill="#581c87" stroke="#c084fc" stroke-width="1.8"/>
+    
+    <!-- Graduation Cap + Tech Circuit Motif -->
+    <!-- Cap top diamond -->
+    <polygon points="0,-17 18,-8 0,1 -18,-8" fill="url(#accentGrad)"/>
+    <!-- Cap skull base -->
+    <path d="M -11 -4 L -11 5 Q 0 11 11 5 L 11 -4 Z" fill="#ffffff"/>
+    <!-- Tassel -->
+    <path d="M 0 -8 L 15 -3 L 15 9" stroke="#fde047" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <circle cx="15" cy="9" r="2.2" fill="#fde047"/>
+    <!-- Digital nodes below cap -->
+    <circle cx="-9" cy="17" r="2.2" fill="#a855f7"/>
+    <circle cx="0" cy="19" r="2.8" fill="#c084fc"/>
+    <circle cx="9" cy="17" r="2.2" fill="#a855f7"/>
+    <line x1="-9" y1="17" x2="0" y2="19" stroke="#c084fc" stroke-width="1.5"/>
+    <line x1="9" y1="17" x2="0" y2="19" stroke="#c084fc" stroke-width="1.5"/>
+  </g>
+
+  <!-- Right Text: MASTER (Bold, Big, Fully Visible) -->
+  <text x="306" y="53" text-anchor="middle" fill="#ffffff" font-family="'Segoe UI', Roboto, -apple-system, sans-serif" font-size="32" font-weight="900" letter-spacing="1.5">MASTER</text>
+</svg>

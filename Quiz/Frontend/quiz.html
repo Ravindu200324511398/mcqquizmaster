@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quiz in Progress | Online Quiz System</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <nav class="navbar">
+    <div class="container nav-content">
+      <a href="index.html" class="brand" aria-label="QuizMaster Home">
+        <img src="images/quizmaster-badge.svg" alt="QuizMaster Logo" class="brand-logo-img">
+        <span id="quiz-brand-title" style="font-size: 0.95rem; color: var(--muted); border-left: 2px solid var(--border); padding-left: 12px; margin-left: 2px;">Active Quiz Session</span>
+      </a>
+      <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
+        <!-- Proctoring & Exam Integrity Badges -->
+        <span class="proctor-pill" id="proctor-status-pill">
+          <span class="live-dot"></span> <i class="fa-solid fa-shield-halved"></i> Proctor Active
+        </span>
+        <button class="btn-fullscreen" id="btn-fullscreen-toggle" onclick="toggleFullscreen()" title="Toggle Fullscreen Exam Mode">
+          <i class="fa-solid fa-expand" id="fullscreen-icon"></i> <span id="fullscreen-text">Fullscreen</span>
+        </button>
+        <span id="student-badge" style="font-weight: 600; color: var(--slate); font-size: 0.95rem;">
+          <i class="fa-solid fa-user-circle"></i> Student
+        </span>
+        <button class="btn btn-secondary" onclick="confirmQuit()" style="padding: 6px 14px; font-size: 0.85rem; width: auto;">
+          <i class="fa-solid fa-arrow-right-from-bracket"></i> Exit Quiz
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container" style="max-width: 960px; padding: 24px;">
+
+    <!-- Quiz Header with Timer -->
+    <div class="quiz-header-bar">
+      <div>
+        <h2 id="quiz-title" style="font-size: 1.4rem; color: var(--dark); margin-bottom: 4px;">Loading Quiz...</h2>
+        <span id="question-progress-text" style="color: var(--muted); font-size: 0.9rem;">Question 1 of 1</span>
+      </div>
+      <div class="timer-box" id="timer-box">
+        <i class="fa-solid fa-stopwatch"></i>
+        <span id="timer-display">05:00</span>
+      </div>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="progress-container">
+      <div class="progress-bar" id="progress-bar" style="width: 0%;"></div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 280px; gap: 24px;" id="quiz-layout">
+      <!-- Main Question Area -->
+      <div>
+        <div class="question-box exam-protected" id="question-card">
+          <div class="question-number" id="question-number-badge">QUESTION 1</div>
+          <div class="question-title" id="question-text">Loading question content...</div>
+          
+          <div class="options-list" id="options-container">
+            <!-- Options A, B, C, D will be populated here -->
+          </div>
+
+          <!-- Navigation Controls -->
+          <div class="quiz-controls">
+            <button class="btn btn-secondary" id="btn-prev" onclick="navigateQuestion(-1)" style="width: auto;">
+              <i class="fa-solid fa-chevron-left"></i> Previous
+            </button>
+            <div style="display: flex; gap: 12px;">
+              <button class="btn btn-primary" id="btn-next" onclick="navigateQuestion(1)" style="width: auto;">
+                Next <i class="fa-solid fa-chevron-right"></i>
+              </button>
+              <button class="btn btn-success" id="btn-submit" onclick="confirmSubmit()" style="width: auto; display: none;">
+                <i class="fa-solid fa-check-double"></i> Submit Quiz
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Question Palette -->
+      <div>
+        <div class="palette-card">
+          <h4><i class="fa-solid fa-th-large"></i> Question Palette</h4>
+          <p style="font-size: 0.8rem; color: var(--muted); margin-bottom: 14px;">Quickly jump between questions</p>
+          <div class="palette-grid" id="palette-grid">
+            <!-- Palette buttons (1, 2, 3...) -->
+          </div>
+          <hr style="margin: 18px 0; border: none; border-top: 1px solid var(--border);">
+          <div style="font-size: 0.8rem; color: var(--muted); display: flex; flex-direction: column; gap: 6px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="width: 14px; height: 14px; background: var(--success); border-radius: 3px; display: inline-block;"></span>
+              Answered
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="width: 14px; height: 14px; background: var(--primary-light); border: 1px solid var(--primary); border-radius: 3px; display: inline-block;"></span>
+              Current
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="width: 14px; height: 14px; background: var(--light-bg); border: 1px solid var(--border); border-radius: 3px; display: inline-block;"></span>
+              Unanswered
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Anti-Cheating & Exam Integrity Modal Alert -->
+    <div id="anti-cheat-modal" class="anti-cheat-modal-overlay">
+      <div class="anti-cheat-card">
+        <div class="anti-cheat-icon-bubble">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+        <h3>Security Alert: Window Switch Detected!</h3>
+        <div>
+          <span class="anti-cheat-counter-badge" id="anti-cheat-violation-badge">
+            Violation 1: Tab Switched / Window Lost Focus
+          </span>
+        </div>
+        <p id="anti-cheat-message">
+          You have navigated away from the active examination screen. All tab switches and window blur events are strictly logged into the MySQL database.
+        </p>
+        <div class="anti-cheat-rule-box">
+          <i class="fa-solid fa-shield-cat" style="color: var(--danger);"></i> <strong>Academic Integrity Protocol:</strong>
+          <ul style="padding-left: 20px; margin-top: 6px;">
+            <li>Do not switch tabs, minimize your browser, or open external resources.</li>
+            <li>Accumulating multiple infractions will permanently flag your submission for academic review.</li>
+          </ul>
+        </div>
+        <button class="btn btn-primary" onclick="dismissAntiCheatWarning()" style="width: 100%; padding: 12px; font-size: 1rem; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);">
+          <i class="fa-solid fa-arrow-rotate-left"></i> I Understand & Return to Exam
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <script src="js/api.js"></script>
+  <script>
+    let currentQuiz = null;
+    let questions = [];
+    let currentIndex = 0;
+    let userAnswers = {}; // { questionId: 'A' | 'B' | 'C' | 'D' }
+    let timerInterval = null;
+    let timeRemaining = 300; // in seconds
+    let studentName = '';
+    let studentId = '';
+
+    // ==========================================
+    // EXAM INTEGRITY & ANTI-CHEATING STATE
+    // ==========================================
+    let tabSwitchCount = 0;
+    let isExamActive = false;
+    let isWarningVisible = false;
+
+    // Web Audio API Sound Synthesizer for Security Warning
+    function playSecurityAlertSound() {
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(520, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(260, ctx.currentTime + 0.35);
+        gain.gain.setValueAtTime(0.18, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.35);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.35);
+      } catch (e) {
+        // AudioContext policy
+      }
+    }
+
+    function triggerAntiCheatAlert(reason) {
+      if (!isExamActive || isWarningVisible) return;
+      tabSwitchCount++;
+      isWarningVisible = true;
+      playSecurityAlertSound();
+
+      const badge = document.getElementById('anti-cheat-violation-badge');
+      const msg = document.getElementById('anti-cheat-message');
+      const pill = document.getElementById('proctor-status-pill');
+
+      if (pill) {
+        pill.classList.add('flagged');
+        pill.innerHTML = `<span class="live-dot" style="background:#ef4444; box-shadow:0 0 10px #ef4444;"></span> <i class="fa-solid fa-triangle-exclamation"></i> Proctor Flagged (${tabSwitchCount})`;
+      }
+
+      if (badge) {
+        badge.innerText = `Violation ${tabSwitchCount}: ${reason}`;
+      }
+
+      if (msg) {
+        if (tabSwitchCount >= 3) {
+          msg.innerHTML = `<strong style="color:var(--danger); font-size:1.05rem;">CRITICAL INTEGRITY WARNING:</strong><br>You have reached ${tabSwitchCount} security infractions. Your final quiz submission will be permanently flagged for instructor disciplinary review.`;
+        } else {
+          msg.innerText = `You have navigated away from the active examination screen (${reason}). All window blur events and tab switches are strictly recorded.`;
+        }
+      }
+
+      document.getElementById('anti-cheat-modal').classList.add('active');
+    }
+
+    function dismissAntiCheatWarning() {
+      document.getElementById('anti-cheat-modal').classList.remove('active');
+      setTimeout(() => { isWarningVisible = false; }, 400);
+    }
+
+    // Tab Switch Detector (visibilitychange)
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden && isExamActive) {
+        triggerAntiCheatAlert('Tab Switched / Minimized');
+      }
+    });
+
+    // Window Blur Detector (window.onblur)
+    window.addEventListener('blur', () => {
+      if (isExamActive) {
+        triggerAntiCheatAlert('Window Lost Focus');
+      }
+    });
+
+    // Fullscreen Toggle & Exit Monitor
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => {
+          console.warn('Fullscreen request failed:', err);
+        });
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    }
+
+    document.addEventListener('fullscreenchange', () => {
+      const icon = document.getElementById('fullscreen-icon');
+      const text = document.getElementById('fullscreen-text');
+      if (document.fullscreenElement) {
+        if (icon) icon.className = 'fa-solid fa-compress';
+        if (text) text.innerText = 'Exit Fullscreen';
+      } else {
+        if (icon) icon.className = 'fa-solid fa-expand';
+        if (text) text.innerText = 'Fullscreen';
+        if (isExamActive) {
+          triggerAntiCheatAlert('Exited Fullscreen Mode');
+        }
+      }
+    });
+
+    // Question Text Copy & Right-Click Prevention
+    document.addEventListener('DOMContentLoaded', () => {
+      const card = document.getElementById('question-card');
+      if (card) {
+        card.addEventListener('contextmenu', e => e.preventDefault());
+        card.addEventListener('copy', e => {
+          e.preventDefault();
+          alert('⚠️ Security Notice: Copying question content is prohibited during examination sessions.');
+        });
+      }
+    });
+
+    // Initialize Quiz
+    async function initQuiz() {
+      studentName = localStorage.getItem('current_student_name') || 'Guest Student';
+      studentId = localStorage.getItem('current_student_id') || 'N/A';
+      document.getElementById('student-badge').innerHTML = `<i class="fa-solid fa-user-circle"></i> ${studentName}`;
+
+      const params = new URLSearchParams(window.location.search);
+      const quizId = params.get('quizId') || 1;
+
+      currentQuiz = await QuizApi.getQuizById(quizId);
+      if (!currentQuiz) {
+        alert('Quiz not found!');
+        window.location.href = 'index.html';
+        return;
+      }
+
+      document.getElementById('quiz-title').innerText = currentQuiz.title;
+      document.getElementById('quiz-brand-title').innerText = currentQuiz.title;
+
+      questions = await QuizApi.getQuestions(quizId);
+      if (!questions || questions.length === 0) {
+        alert('No questions found for this quiz.');
+        window.location.href = 'index.html';
+        return;
+      }
+
+      timeRemaining = (currentQuiz.timeLimit || 5) * 60;
+      startTimer();
+      renderPalette();
+      showQuestion(0);
+
+      // Arm anti-cheat monitoring
+      isExamActive = true;
+    }
+
+    // Timer logic
+    function startTimer() {
+      updateTimerDisplay();
+      timerInterval = setInterval(() => {
+        timeRemaining--;
+        updateTimerDisplay();
+        if (timeRemaining <= 0) {
+          clearInterval(timerInterval);
+          alert('Time is up! Submitting your answers automatically.');
+          submitQuiz();
+        }
+      }, 1000);
+    }
+
+    function updateTimerDisplay() {
+      const minutes = Math.floor(timeRemaining / 60);
+      const seconds = timeRemaining % 60;
+      const formatted = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+      document.getElementById('timer-display').innerText = formatted;
+
+      const timerBox = document.getElementById('timer-box');
+      if (timeRemaining < 60) {
+        timerBox.style.background = '#fee2e2';
+        timerBox.style.color = '#dc2626';
+      }
+    }
+
+    // Render Question
+    function showQuestion(index) {
+      if (index < 0 || index >= questions.length) return;
+      currentIndex = index;
+      const q = questions[currentIndex];
+
+      document.getElementById('question-number-badge').innerText = `QUESTION ${currentIndex + 1} OF ${questions.length}`;
+      document.getElementById('question-progress-text').innerText = `Question ${currentIndex + 1} of ${questions.length}`;
+      document.getElementById('question-text').innerText = q.questionText;
+
+      // Update progress bar
+      const progressPercent = ((currentIndex + 1) / questions.length) * 100;
+      document.getElementById('progress-bar').style.width = `${progressPercent}%`;
+
+      // Render Options
+      const optionsContainer = document.getElementById('options-container');
+      const selectedOption = userAnswers[q.id];
+
+      const options = [
+        { key: 'A', text: q.optionA },
+        { key: 'B', text: q.optionB },
+        { key: 'C', text: q.optionC },
+        { key: 'D', text: q.optionD }
+      ];
+
+      optionsContainer.innerHTML = options.map(opt => `
+        <div class="option-item ${selectedOption === opt.key ? 'selected' : ''}" data-key="${opt.key}" onclick="selectAnswer(${q.id}, '${opt.key}')">
+          <div class="option-indicator">${opt.key}</div>
+          <div style="flex: 1; font-size: 1rem;">${opt.text}</div>
+        </div>
+      `).join('');
+
+      // Controls visibility
+      document.getElementById('btn-prev').disabled = (currentIndex === 0);
+      if (currentIndex === questions.length - 1) {
+        document.getElementById('btn-next').style.display = 'none';
+        document.getElementById('btn-submit').style.display = 'inline-flex';
+      } else {
+        document.getElementById('btn-next').style.display = 'inline-flex';
+        document.getElementById('btn-submit').style.display = 'none';
+      }
+
+      updatePaletteButtons();
+    }
+
+    // Select Answer without DOM re-render flicker
+    function selectAnswer(questionId, optionKey) {
+      userAnswers[questionId] = optionKey;
+
+      const optionItems = document.querySelectorAll('.option-item');
+      optionItems.forEach(item => {
+        if (item.getAttribute('data-key') === optionKey) {
+          item.classList.add('selected');
+        } else {
+          item.classList.remove('selected');
+        }
+      });
+
+      updatePaletteButtons();
+    }
+
+    // Navigate
+    function navigateQuestion(delta) {
+      showQuestion(currentIndex + delta);
+    }
+
+    // Render Palette
+    function renderPalette() {
+      const grid = document.getElementById('palette-grid');
+      grid.innerHTML = questions.map((q, i) => `
+        <button class="palette-btn" id="pal-btn-${i}" onclick="showQuestion(${i})">
+          ${i + 1}
+        </button>
+      `).join('');
+    }
+
+    function updatePaletteButtons() {
+      questions.forEach((q, i) => {
+        const btn = document.getElementById(`pal-btn-${i}`);
+        if (!btn) return;
+        btn.className = 'palette-btn';
+        if (i === currentIndex) {
+          btn.classList.add('active');
+        } else if (userAnswers[q.id]) {
+          btn.classList.add('answered');
+        }
+      });
+    }
+
+    // Confirm & Submit
+    function confirmSubmit() {
+      const answeredCount = Object.keys(userAnswers).length;
+      const unanswered = questions.length - answeredCount;
+      let msg = `You have answered ${answeredCount} of ${questions.length} questions.`;
+      if (unanswered > 0) {
+        msg += `\nYou still have ${unanswered} unanswered question(s). Are you sure you want to submit?`;
+      } else {
+        msg += `\nAre you sure you want to finish and submit?`;
+      }
+
+      if (confirm(msg)) {
+        submitQuiz();
+      }
+    }
+
+    async function submitQuiz() {
+      clearInterval(timerInterval);
+      isExamActive = false; // Disarm anti-cheat monitoring
+
+      // Score calculation
+      let score = 0;
+      const reviewDetails = [];
+
+      questions.forEach(q => {
+        const selected = userAnswers[q.id] || null;
+        const isCorrect = (selected === q.correctOption);
+        if (isCorrect) score++;
+
+        reviewDetails.push({
+          id: q.id,
+          questionText: q.questionText,
+          selected: selected,
+          correctOption: q.correctOption,
+          isCorrect: isCorrect,
+          explanation: q.explanation,
+          optionA: q.optionA,
+          optionB: q.optionB,
+          optionC: q.optionC,
+          optionD: q.optionD
+        });
+      });
+
+      const percentage = Math.round((score / questions.length) * 100);
+      const timeTakenSeconds = (currentQuiz.timeLimit * 60) - timeRemaining;
+
+      const integrityStatus = (tabSwitchCount === 0) ? 'Clean (Verified)' : (tabSwitchCount <= 2 ? `Minor Infraction (${tabSwitchCount} switches)` : `Flagged (${tabSwitchCount} switches)`);
+
+      const resultPayload = {
+        studentName: studentName,
+        studentId: studentId,
+        quizId: currentQuiz.id,
+        quizTitle: currentQuiz.title,
+        score: score,
+        totalQuestions: questions.length,
+        percentage: percentage,
+        timeTakenSeconds: timeTakenSeconds,
+        tabSwitchCount: tabSwitchCount,
+        integrityStatus: integrityStatus,
+        details: reviewDetails
+      };
+
+      // Store in session for result page display
+      sessionStorage.setItem('current_quiz_result', JSON.stringify(resultPayload));
+
+      // Post to backend/local API
+      await QuizApi.submitResult(resultPayload);
+
+      window.location.href = 'result.html';
+    }
+
+    function confirmQuit() {
+      if (confirm('Are you sure you want to leave this quiz? Your current progress will be lost.')) {
+        clearInterval(timerInterval);
+        window.location.href = 'index.html';
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', initQuiz);
+  </script>
+</body>
+</html>

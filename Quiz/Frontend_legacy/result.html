@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quiz Results | Online Quiz System</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <script>if(localStorage.getItem('qm-theme')==='dark'){document.documentElement.classList.add('dark-theme-pre');}</script>
+  <style>.dark-theme-pre{background:#0d1117!important;}</style>
+</head>
+<body id="page-body">
+
+  <!-- Navigation: Left (Home), Center (Lecturer Portal), Right (Student Portal & Items) -->
+  <nav class="navbar">
+    <div class="container nav-content">
+      <!-- LEFT CORNER: Home & Brand -->
+      <div class="nav-left-group">
+        <a href="index.html" class="brand" aria-label="QuizMaster Home">
+          <img src="images/quizmaster-badge.svg" alt="QuizMaster Logo" class="brand-logo-img">
+        </a>
+        <a href="index.html" class="nav-link-item"><i class="fa-solid fa-house"></i> Home</a>
+      </div>
+
+      <!-- MIDDLE / CENTER: Lecturer Portal -->
+      <div class="nav-center-group">
+        <a href="auth.html?role=lecturer" class="nav-lecturer-center-btn" title="Restricted to University Academic Staff & Module Coordinators">
+          <i class="fa-solid fa-chalkboard-user"></i>
+          <span>Lecturer Portal</span>
+          <span class="lock-tag"><i class="fa-solid fa-lock"></i> Staff</span>
+        </a>
+      </div>
+
+      <!-- RIGHT CORNER: Student Portal Items -->
+      <div class="nav-right-group">
+        <span class="portal-badge portal-badge-student"><i class="fa-solid fa-graduation-cap"></i> STUDENT PORTAL</span>
+        <a href="student-dashboard.html" class="nav-link-item"><i class="fa-solid fa-id-card"></i> Student Profile</a>
+        <a href="leaderboard.html" class="nav-link-item"><i class="fa-solid fa-trophy"></i> Leaderboard</a>
+        <!-- Auth button: dynamically updated by JS -->
+        <div id="nav-auth-area" style="display:flex;align-items:center;gap:7px;"></div>
+        <button id="theme-toggle-btn" title="Toggle Dark Mode" aria-label="Toggle Dark Mode">
+          <i class="fa-solid fa-moon" id="theme-icon"></i>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container" style="max-width: 860px; padding: 40px 20px;">
+    
+    <!-- Score Card -->
+    <div class="result-card">
+      <div class="score-circle" id="score-circle">
+        <span class="number" id="percentage-text">100%</span>
+        <span class="sub">Final Score</span>
+      </div>
+
+      <h2 id="congrats-title" style="font-size: 2rem; color: var(--dark); margin-bottom: 8px;">Outstanding Performance!</h2>
+      <p id="congrats-sub" style="color: var(--muted); font-size: 1.05rem;">
+        Congratulations <strong id="student-name-display" style="color: var(--dark);">Student</strong>, you successfully completed the <strong id="quiz-title-display">Quiz</strong>.
+      </p>
+
+      <!-- Breakdown Stats -->
+      <div class="result-breakdown" style="grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));">
+        <div class="breakdown-item">
+          <strong id="stat-score" style="color: var(--primary);">0/0</strong>
+          <span style="color: var(--muted); font-size: 0.85rem;">Correct Answers</span>
+        </div>
+        <div class="breakdown-item">
+          <strong id="stat-wrong" style="color: var(--danger);">0</strong>
+          <span style="color: var(--muted); font-size: 0.85rem;">Incorrect / Skipped</span>
+        </div>
+        <div class="breakdown-item">
+          <strong id="stat-time" style="color: var(--secondary);">0m 00s</strong>
+          <span style="color: var(--muted); font-size: 0.85rem;">Time Elapsed</span>
+        </div>
+        <!-- Exam Integrity & Proctor Audit Stat -->
+        <div class="breakdown-item">
+          <strong id="stat-integrity" style="color: var(--success); font-size: 1.1rem;">
+            <i class="fa-solid fa-shield-halved"></i> Verified
+          </strong>
+          <span style="color: var(--muted); font-size: 0.85rem;" id="stat-integrity-sub">0 Tab Switches</span>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div style="display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin-top: 24px;">
+        <a href="index.html" class="btn btn-secondary" style="width: auto;">
+          <i class="fa-solid fa-arrow-left"></i> Back to Quizzes
+        </a>
+        <a href="leaderboard.html" class="btn btn-primary" style="width: auto;">
+          <i class="fa-solid fa-trophy"></i> View Leaderboard
+        </a>
+      </div>
+
+      <!-- Detailed Question Review -->
+      <div class="review-section">
+        <h3 style="font-size: 1.3rem; color: var(--dark); margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+          <i class="fa-solid fa-list-check" style="color: var(--primary);"></i> In-Depth Solution Review
+        </h3>
+        
+        <div id="review-list">
+          <!-- Injected via JavaScript -->
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer (Purple Theme QuizMaster Platform) -->
+  <footer class="site-footer">
+    <div class="container footer-container">
+      <div class="footer-grid">
+        
+        <!-- Left Column: QuizMaster Platform Info -->
+        <div class="footer-about">
+          <div class="footer-logos">
+            <img src="images/quizmaster-badge.svg" alt="QuizMaster Logo" class="footer-badge-logo">
+          </div>
+          <p class="footer-desc">
+            QuizMaster is an interactive digital assessment and online examination platform designed for contemporary educational institutions and skill evaluations. Featuring automated grading, real-time analytics, question bank management, and anti-cheat exam monitoring to empower students and instructors worldwide.
+          </p>
+        </div>
+
+        <!-- Right Column: Contact Us (Purple Theme) -->
+        <div class="footer-contact">
+          <h3 class="footer-contact-title">
+            <i class="fa-solid fa-headset" style="font-size: 1.15rem; margin-right: 8px;"></i> Contact Us
+          </h3>
+          <p class="footer-contact-address">
+            QuizMaster Learning Technologies, Tech Hub Center, Colombo, Sri Lanka.
+          </p>
+          <div class="footer-contact-list">
+            <div class="footer-contact-item">
+              <i class="fa-solid fa-phone"></i>
+              <span>Hotline : +(94) 11 234 5678 / +(94) 77 890 1234</span>
+            </div>
+            <div class="footer-contact-item">
+              <i class="fa-solid fa-envelope"></i>
+              <span>Email : <a href="mailto:support@quizmaster.edu.lk">support@quizmaster.edu.lk</a></span>
+            </div>
+            <div class="footer-contact-item">
+              <i class="fa-solid fa-clock"></i>
+              <span>Hours : Mon – Fri 8:30 AM – 5:30 PM (24/7 Live Monitoring)</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Bottom Bar -->
+      <div class="footer-bottom-bar">
+        <p>&copy; 2026 QuizMaster Online Assessment System. All Rights Reserved.</p>
+        <div class="footer-bottom-links">
+          <span>Privacy Policy</span> &bull; 
+          <span>Terms of Service</span> &bull; 
+          <span>Assessment Results</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/api.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const dataRaw = sessionStorage.getItem('current_quiz_result');
+      if (!dataRaw) {
+        alert('No recent quiz result found.');
+        window.location.href = 'index.html';
+        return;
+      }
+
+      const res = JSON.parse(dataRaw);
+
+      document.getElementById('percentage-text').innerText = `${res.percentage}%`;
+      document.getElementById('student-name-display').innerText = res.studentName || 'Student';
+      document.getElementById('quiz-title-display').innerText = res.quizTitle;
+      document.getElementById('stat-score').innerText = `${res.score} / ${res.totalQuestions}`;
+      document.getElementById('stat-wrong').innerText = res.totalQuestions - res.score;
+
+      const mins = Math.floor(res.timeTakenSeconds / 60);
+      const secs = res.timeTakenSeconds % 60;
+      document.getElementById('stat-time').innerText = `${mins}m ${secs}s`;
+
+      // Exam Integrity & Proctor Audit Stat
+      const switches = res.tabSwitchCount || 0;
+      const integrityEl = document.getElementById('stat-integrity');
+      const integritySub = document.getElementById('stat-integrity-sub');
+      if (switches === 0) {
+        integrityEl.innerHTML = '<i class="fa-solid fa-shield-check" style="color:var(--success)"></i> Verified';
+        integrityEl.style.color = 'var(--success)';
+        integritySub.innerText = '0 Tab Switches (Clean)';
+      } else {
+        integrityEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation" style="color:var(--danger)"></i> Flagged (${switches})`;
+        integrityEl.style.color = 'var(--danger)';
+        integritySub.innerText = `${switches} Tab Switch(es) Logged`;
+      }
+
+      // Status title styling
+      const congratsTitle = document.getElementById('congrats-title');
+      const scoreCircle = document.getElementById('score-circle');
+      if (res.percentage >= 80) {
+        congratsTitle.innerText = '🎉 Outstanding Performance!';
+        scoreCircle.style.background = 'linear-gradient(135deg, #10b981, #06b6d4)';
+      } else if (res.percentage >= 50) {
+        congratsTitle.innerText = '👍 Well Done!';
+        scoreCircle.style.background = 'linear-gradient(135deg, #4f46e5, #06b6d4)';
+      } else {
+        congratsTitle.innerText = '📖 Keep Practicing!';
+        scoreCircle.style.background = 'linear-gradient(135deg, #f59e0b, #ef4444)';
+      }
+
+      // Render Solution Review
+      const reviewList = document.getElementById('review-list');
+      if (res.details && res.details.length > 0) {
+        reviewList.innerHTML = res.details.map((item, idx) => {
+          const userSelectedText = item.selected ? item[`option${item.selected}`] : 'No answer selected';
+          const correctText = item[`option${item.correctOption}`];
+
+          return `
+            <div class="review-item ${item.isCorrect ? 'correct' : 'incorrect'}">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                <span style="font-weight: 700; font-size: 0.85rem; color: var(--muted);">QUESTION ${idx + 1}</span>
+                <span class="quiz-badge" style="background: ${item.isCorrect ? 'var(--success-light)' : 'var(--danger-light)'}; color: ${item.isCorrect ? 'var(--success)' : 'var(--danger)'};">
+                  ${item.isCorrect ? '<i class="fa-solid fa-check"></i> Correct' : '<i class="fa-solid fa-xmark"></i> Incorrect'}
+                </span>
+              </div>
+              <h4 style="font-size: 1.05rem; color: var(--dark); margin-bottom: 12px;">${item.questionText}</h4>
+              
+              <div style="font-size: 0.9rem; margin-bottom: 8px;">
+                <strong>Your Answer:</strong> 
+                <span style="color: ${item.isCorrect ? 'var(--success)' : 'var(--danger)'}; font-weight: 600;">
+                  (${item.selected || '-'}) ${userSelectedText}
+                </span>
+              </div>
+
+              ${!item.isCorrect ? `
+                <div style="font-size: 0.9rem; margin-bottom: 10px;">
+                  <strong>Correct Answer:</strong> 
+                  <span style="color: var(--success); font-weight: 600;">
+                    (${item.correctOption}) ${correctText}
+                  </span>
+                </div>
+              ` : ''}
+
+              ${item.explanation ? `
+                <div style="margin-top: 10px; padding: 10px 14px; background: white; border-radius: 8px; border: 1px solid var(--border); font-size: 0.85rem; color: var(--slate);">
+                  <strong style="color: var(--primary);"><i class="fa-solid fa-circle-info"></i> Explanation:</strong> ${item.explanation}
+                </div>
+              ` : ''}
+            </div>
+          `;
+        }).join('');
+      }
+
+      // Render auth state in navbar
+      renderNavAuthArea();
+    });
+
+    function renderNavAuthArea() {
+      const user = (typeof QuizApi !== 'undefined' && QuizApi.getSession) ? QuizApi.getSession() : null;
+      const area = document.getElementById('nav-auth-area');
+      if (!area) return;
+      if (user && user.role === 'student') {
+        area.innerHTML = `
+          <div style="display:flex;align-items:center;gap:6px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);border-radius:20px;padding:4px 12px;font-size:0.82rem;font-weight:600;color:#059669;" title="${user.email || ''}">
+            <i class="fa-solid fa-circle-user"></i> ${(user.name || 'Student').split(' ')[0]}
+          </div>
+          <button onclick="handleStudentLogout()" style="background:none;border:1px solid var(--border);border-radius:8px;padding:5px 10px;font-size:0.8rem;cursor:pointer;color:var(--muted);white-space:nowrap;" title="Sign Out">
+            <i class="fa-solid fa-right-from-bracket"></i>
+          </button>`;
+      } else {
+        area.innerHTML = `<a href="auth.html" class="nav-signin-btn"><i class="fa-solid fa-right-to-bracket"></i> Sign In</a>`;
+      }
+    }
+
+    function handleStudentLogout() {
+      if (confirm('Sign out of your student account?')) {
+        if (typeof QuizApi !== 'undefined') QuizApi.clearSession();
+        renderNavAuthArea();
+      }
+    }
+  </script>
+
+  <!-- Dark Theme Toggle Script -->
+  <script>
+    (function() {
+      const body = document.getElementById('page-body');
+      const btn  = document.getElementById('theme-toggle-btn');
+      const icon = document.getElementById('theme-icon');
+      const DARK = 'dark-theme'; const KEY = 'qm-theme';
+      function applyTheme(isDark) {
+        body.classList.toggle(DARK, isDark);
+        icon.className = isDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+        localStorage.setItem(KEY, isDark ? 'dark' : 'light');
+      }
+      applyTheme(localStorage.getItem(KEY) === 'dark');
+      btn.addEventListener('click', function() { applyTheme(!body.classList.contains(DARK)); });
+    })();
+  </script>
+</body>
+</html>

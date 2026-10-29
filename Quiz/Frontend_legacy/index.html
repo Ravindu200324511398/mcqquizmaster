@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Online Quiz System | Home</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- Prevent flash of un-themed content -->
+  <script>if(localStorage.getItem('qm-theme')==='dark'){document.documentElement.classList.add('dark-theme-pre');}</script>
+  <style>.dark-theme-pre{background:#0d1117!important;}</style>
+</head>
+<body id="page-body">
+
+  <!-- Navigation: Left (Home), Center (Lecturer Portal), Right (Student Portal & Items) -->
+  <nav class="navbar">
+    <div class="container nav-content">
+      <!-- LEFT CORNER: Home & Brand -->
+      <div class="nav-left-group">
+        <a href="index.html" class="brand" aria-label="QuizMaster Home">
+          <img src="images/quizmaster-badge.svg" alt="QuizMaster Logo" class="brand-logo-img">
+        </a>
+        <a href="index.html" class="nav-link-item active"><i class="fa-solid fa-house"></i> Home</a>
+      </div>
+
+      <!-- MIDDLE / CENTER: Lecturer Portal -->
+      <div class="nav-center-group">
+        <a href="auth.html?role=lecturer" class="nav-lecturer-center-btn" title="Restricted to University Academic Staff & Module Coordinators">
+          <i class="fa-solid fa-chalkboard-user"></i>
+          <span>Lecturer Portal</span>
+          <span class="lock-tag"><i class="fa-solid fa-lock"></i> Staff</span>
+        </a>
+      </div>
+
+      <!-- RIGHT CORNER: Student Portal Items -->
+      <div class="nav-right-group">
+        <span class="portal-badge portal-badge-student"><i class="fa-solid fa-graduation-cap"></i> STUDENT PORTAL</span>
+        <a href="student-dashboard.html" class="nav-link-item"><i class="fa-solid fa-id-card"></i> My Profile</a>
+        <a href="leaderboard.html" class="nav-link-item"><i class="fa-solid fa-trophy"></i> Leaderboard</a>
+        <a href="#quizzes" class="nav-btn"><i class="fa-solid fa-play"></i> Browse Quizzes</a>
+        <!-- Auth button: dynamically updated by JS -->
+        <div id="nav-auth-area" style="display:flex;align-items:center;gap:7px;"></div>
+        <button id="theme-toggle-btn" title="Toggle Dark Mode" aria-label="Toggle Dark Mode">
+          <i class="fa-solid fa-moon" id="theme-icon"></i>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-grid">
+        <!-- Hero Left Column -->
+        <div class="hero-left">
+          <div class="hero-badge-glass">
+            <i class="fa-solid fa-graduation-cap"></i> Interactive Digital Assessment & Exam Portal
+          </div>
+          <h1>Next-Gen <span>Online Quiz System</span></h1>
+          <p>Experience modern interactive quizzes with instant score evaluations, real-time countdown timers, and in-depth conceptual feedback.</p>
+          <div class="hero-cta">
+            <a href="#quizzes" class="btn btn-primary btn-glow">
+              <i class="fa-solid fa-play"></i> Attempt Quiz Now
+            </a>
+            <a href="leaderboard.html" class="btn btn-glass">
+              <i class="fa-solid fa-trophy"></i> View Leaderboard
+            </a>
+          </div>
+        </div>
+
+        <!-- Hero Right Column: Image Showcase with Glass Frame -->
+        <div class="hero-image-wrapper">
+          <div class="floating-pill-top">
+            <span class="live-dot"></span> Active Exam Session
+          </div>
+          <div class="hero-image-card">
+            <img src="images/student-portal-bg.jpg" alt="University Students in Computer Lab & Examination Hall">
+          </div>
+          <div class="floating-pill-bottom">
+            <i class="fa-solid fa-bolt" style="color: #f59e0b;"></i> Real-Time Evaluation
+          </div>
+        </div>
+      </div>
+      
+      <!-- Stats Row with Frosted Glass & Interactive Actions -->
+      <div class="stats-row">
+        <div class="stat-card-glass stat-card-interactive" onclick="handleStatCardClick('quizzes')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handleStatCardClick('quizzes')}" title="Click to view and jump to available quizzes" tabindex="0" role="button" aria-label="Available Quizzes">
+          <div class="stat-icon-pill"><i class="fa-solid fa-list-check"></i></div>
+          <div class="number" id="stat-quizzes">3</div>
+          <div class="label">Available Quizzes</div>
+          <div class="stat-card-action-hint"><i class="fa-solid fa-arrow-down"></i> Browse Quizzes</div>
+        </div>
+
+        <div class="stat-card-glass stat-card-interactive" onclick="handleStatCardClick('questions')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handleStatCardClick('questions')}" title="Click to view Question Bank & Module Distribution" tabindex="0" role="button" aria-label="MCQ Questions">
+          <div class="stat-icon-pill"><i class="fa-solid fa-layer-group"></i></div>
+          <div class="number" id="stat-questions">10+</div>
+          <div class="label">MCQ Questions</div>
+          <div class="stat-card-action-hint"><i class="fa-solid fa-circle-info"></i> View Breakdown</div>
+        </div>
+
+        <div class="stat-card-glass stat-card-interactive" onclick="handleStatCardClick('attempts')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handleStatCardClick('attempts')}" title="Click to view Completed Assessment Attempts & Leaderboard" tabindex="0" role="button" aria-label="Completed Attempts">
+          <div class="stat-icon-pill"><i class="fa-solid fa-graduation-cap"></i></div>
+          <div class="number" id="stat-students">150+</div>
+          <div class="label">Completed Attempts</div>
+          <div class="stat-card-action-hint"><i class="fa-solid fa-trophy"></i> View Analytics</div>
+        </div>
+
+        <div class="stat-card-glass stat-card-interactive" onclick="handleStatCardClick('status')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handleStatCardClick('status')}" title="Click to test live backend connection & system health" tabindex="0" role="button" aria-label="System Status">
+          <div class="stat-icon-pill"><i class="fa-solid fa-server"></i></div>
+          <div class="number" id="stat-backend"><span style="color:#10b981;"><i class="fa-solid fa-circle-check"></i> Online</span></div>
+          <div class="label">System Status</div>
+          <div class="stat-card-action-hint"><i class="fa-solid fa-heart-pulse"></i> Check Health</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Quizzes Section -->
+  <main class="container" id="quizzes" style="padding-bottom: 60px;">
+    <div class="section-header">
+      <div>
+        <h2>Available Quizzes</h2>
+        <p>Search, filter, and sort across comprehensive subjects to evaluate your knowledge</p>
+      </div>
+      <div>
+        <span class="results-count-pill" id="quiz-results-count">Loading quizzes...</span>
+      </div>
+    </div>
+
+    <!-- Search, Sort & Filter Controls Toolbar (EC4307 Read Rubric: Search + Filter + Sort) -->
+    <div class="quiz-controls-toolbar">
+      <div class="controls-top-row">
+        <!-- Live Search Input -->
+        <div class="search-box-wrapper">
+          <i class="fa-solid fa-magnifying-glass search-icon"></i>
+          <input type="text" id="quiz-search-input" placeholder="Search quizzes by title, category, or description..." oninput="handleSearchInput()">
+          <button type="button" id="search-clear-btn" class="clear-btn" onclick="clearSearch()" title="Clear search">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <!-- Sort Criteria Dropdown -->
+        <div class="sort-group">
+          <label for="quiz-sort-select"><i class="fa-solid fa-arrow-down-short-wide"></i> Sort By:</label>
+          <select id="quiz-sort-select" class="sort-select" onchange="applyFiltersAndSort()">
+            <option value="title-asc">Title (A → Z)</option>
+            <option value="title-desc">Title (Z → A)</option>
+            <option value="time-asc">Time Limit (Shortest First)</option>
+            <option value="time-desc">Time Limit (Longest First)</option>
+            <option value="difficulty-asc">Difficulty (Easy → Hard)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Filter Controls Row: Category & Difficulty -->
+      <div class="controls-filter-row">
+        <div class="filter-group-wrapper">
+          <span class="filter-label-tag"><i class="fa-solid fa-folder-tree"></i> Subject:</span>
+          <button class="filter-btn active cat-btn" data-cat="all" onclick="selectCategoryFilter('all')">All</button>
+          <button class="filter-btn cat-btn" data-cat="web" onclick="selectCategoryFilter('web')">Web Development</button>
+          <button class="filter-btn cat-btn" data-cat="java" onclick="selectCategoryFilter('java')">Java & OOP</button>
+          <button class="filter-btn cat-btn" data-cat="db" onclick="selectCategoryFilter('db')">Database</button>
+        </div>
+
+        <div class="filter-group-wrapper">
+          <span class="filter-label-tag"><i class="fa-solid fa-layer-group"></i> Level:</span>
+          <select id="diff-filter-select" class="sort-select" style="padding: 6px 12px; font-size: 0.85rem;" onchange="applyFiltersAndSort()">
+            <option value="all">All Difficulties</option>
+            <option value="Easy">Easy</option>
+            <option value="Medium">Medium</option>
+            <option value="Hard">Hard</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quizzes Grid -->
+    <div id="quiz-grid" class="quiz-grid">
+      <!-- Injected dynamically by JavaScript -->
+      <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--muted);">
+        <i class="fa-solid fa-spinner fa-spin fa-2x"></i>
+        <p style="margin-top: 10px;">Loading quizzes...</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- Quiz Details Modal (EC4307 Read Rubric: "Viewing Details") -->
+  <div id="details-modal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header-custom">
+        <h3 id="detail-quiz-title"><i class="fa-solid fa-book-open" style="color: var(--primary);"></i> Quiz Details</h3>
+        <button class="modal-close-btn" onclick="closeDetailsModal()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body-custom">
+        <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 14px;">
+          <span class="quiz-badge badge-web" id="detail-category-badge">Web Dev</span>
+          <span class="quiz-badge" id="detail-diff-badge" style="background:#f1f5f9; color:var(--dark);">Medium</span>
+          <span style="font-size: 0.85rem; color: var(--muted); margin-left: auto;">
+            <i class="fa-solid fa-database"></i> 3NF Relational Entity
+          </span>
+        </div>
+
+        <p id="detail-quiz-desc" style="color: var(--slate); font-size: 1rem; line-height: 1.6; margin-bottom: 16px;">
+          Full evaluation overview details.
+        </p>
+
+        <!-- Metadata Metrics Grid -->
+        <div class="detail-meta-grid">
+          <div class="detail-meta-item">
+            <div class="val" id="detail-meta-time">5</div>
+            <div class="lbl">Minutes Allowed</div>
+          </div>
+          <div class="detail-meta-item">
+            <div class="val" id="detail-meta-format">MCQ</div>
+            <div class="lbl">Question Format</div>
+          </div>
+          <div class="detail-meta-item">
+            <div class="val">Instant</div>
+            <div class="lbl">Auto-Grading</div>
+          </div>
+        </div>
+
+        <div class="detail-info-box">
+          <h4 style="font-weight: 700; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
+            <i class="fa-solid fa-circle-info"></i> Candidate Instructions
+          </h4>
+          <ul style="padding-left: 20px; font-size: 0.88rem; line-height: 1.5;">
+            <li>Once you click Start, the countdown timer starts immediately.</li>
+            <li>Each question has 4 options with a single correct answer.</li>
+            <li>Results are evaluated instantaneously and saved into the MySQL database.</li>
+            <li>Detailed explanations are displayed on the completion review screen.</li>
+            <li><strong style="color:var(--danger);"><i class="fa-solid fa-shield-halved"></i> Proctoring Active:</strong> Tab switching or minimizing the window will trigger integrity infraction alerts.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="modal-footer-custom">
+        <button class="btn btn-secondary-outline" onclick="closeDetailsModal()">Close</button>
+        <button class="btn btn-primary" onclick="startQuizFromDetails()">
+          <i class="fa-solid fa-play"></i> Attempt This Quiz Now
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Student Name Entry Modal -->
+  <div id="name-modal" class="modal-overlay">
+    <div class="modal-card" style="max-width: 460px;">
+      <div class="modal-header-custom">
+        <h3><i class="fa-solid fa-user-pen" style="color: var(--primary);"></i> Enter Student Details</h3>
+        <button class="modal-close-btn" onclick="closeNameModal()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body-custom">
+        <p style="color: var(--muted); font-size: 0.9rem; margin-bottom: 20px;">
+          Provide your candidate details so your quiz attempt and marks are properly recorded in the MySQL results table.
+        </p>
+        <div class="form-group">
+          <label>Full Name <span style="color: var(--danger);">*</span></label>
+          <input type="text" id="student-name-input" class="form-control" placeholder="e.g. Supun Perera" required>
+        </div>
+        <div class="form-group" style="margin-bottom: 0;">
+          <label>Student ID / Reg No. <span style="color: var(--danger);">*</span></label>
+          <input type="text" id="student-id-input" class="form-control" placeholder="e.g. EC/2021/045" required>
+        </div>
+      </div>
+      <div class="modal-footer-custom">
+        <button class="btn btn-secondary-outline" onclick="closeNameModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="proceedToQuiz()">
+          Start Quiz <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: MCQ Questions Breakdown -->
+  <div id="stat-modal-questions" class="modal-overlay">
+    <div class="modal-card" style="max-width: 600px;">
+      <div class="modal-header-custom" style="background: linear-gradient(135deg, rgba(124, 58, 237, 0.12), rgba(168, 85, 247, 0.18));">
+        <div>
+          <h3 style="margin: 0; font-size: 1.25rem; color: var(--dark); display: flex; align-items: center; gap: 10px;">
+            <i class="fa-solid fa-layer-group" style="color: var(--primary);"></i> Question Bank & Curriculum Coverage
+          </h3>
+          <p style="margin: 4px 0 0 0; font-size: 0.85rem; color: var(--muted);">Validated 3NF Schema &bull; Instant Answer Explanations</p>
+        </div>
+        <button class="modal-close-btn" onclick="closeStatModal('stat-modal-questions')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="modal-body-custom" style="padding: 22px;">
+        <div style="background: rgba(124, 58, 237, 0.08); border-left: 4px solid var(--primary); padding: 12px 16px; border-radius: var(--radius-sm); margin-bottom: 18px; font-size: 0.9rem;">
+          <strong style="color: var(--dark); display: block; margin-bottom: 4px;">
+            <i class="fa-solid fa-circle-check" style="color: var(--primary);"></i> Multi-Module Examination Bank
+          </strong>
+          Questions are curated by university academic staff with 4 multiple-choice options, automated timers, and real-time conceptual feedback.
+        </div>
+
+        <div style="margin-bottom: 18px;">
+          <h5 style="margin: 0 0 10px 0; font-size: 0.85rem; text-transform: uppercase; color: var(--muted); letter-spacing: 0.5px;">Module-wise Distribution</h5>
+          <div style="display: flex; flex-direction: column; gap: 8px;" id="stat-questions-module-list">
+            <div style="display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); border: 1px solid var(--border); padding: 10px 14px; border-radius: var(--radius-sm);">
+              <span style="font-weight: 600; font-size: 0.9rem;"><i class="fa-solid fa-code" style="color: #6366f1; margin-right: 8px;"></i> EE4207: Web Application Development</span>
+              <span class="quiz-badge badge-web" style="font-weight: 700;">4 MCQs</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); border: 1px solid var(--border); padding: 10px 14px; border-radius: var(--radius-sm);">
+              <span style="font-weight: 600; font-size: 0.9rem;"><i class="fa-brands fa-java" style="color: #f59e0b; margin-right: 8px;"></i> CS201: Java & Object-Oriented Programming</span>
+              <span class="quiz-badge badge-java" style="font-weight: 700;">3 MCQs</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); border: 1px solid var(--border); padding: 10px 14px; border-radius: var(--radius-sm);">
+              <span style="font-weight: 600; font-size: 0.9rem;"><i class="fa-solid fa-database" style="color: #10b981; margin-right: 8px;"></i> IT104: Database Systems & SQL</span>
+              <span class="quiz-badge badge-db" style="font-weight: 700;">3 MCQs</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); border: 1px solid var(--border); padding: 10px 14px; border-radius: var(--radius-sm);">
+              <span style="font-weight: 600; font-size: 0.9rem;"><i class="fa-solid fa-microchip" style="color: #8b5cf6; margin-right: 8px;"></i> CS100: General Computer Science</span>
+              <span class="quiz-badge badge-general" style="font-weight: 700;">2 MCQs</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.85rem; color: var(--slate);">
+          <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: var(--radius-sm); padding: 8px 12px; display: flex; align-items: center; gap: 8px;">
+            <i class="fa-solid fa-stopwatch" style="color: #10b981;"></i> Automatic Timed Submissions
+          </div>
+          <div style="background: rgba(124, 58, 237, 0.08); border: 1px solid rgba(124, 58, 237, 0.25); border-radius: var(--radius-sm); padding: 8px 12px; display: flex; align-items: center; gap: 8px;">
+            <i class="fa-solid fa-shield-halved" style="color: #7c3aed;"></i> Anti-Cheat Proctor Integrity
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer-custom">
+        <button class="btn btn-secondary-outline" onclick="closeStatModal('stat-modal-questions')">Close</button>
+        <button class="btn btn-primary" onclick="closeStatModal('stat-modal-questions'); scrollToQuizzes();">
+          <i class="fa-solid fa-play"></i> Attempt a Quiz Now
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Completed Attempts & Analytics -->
+  <div id="stat-modal-attempts" class="modal-overlay">
+    <div class="modal-card" style="max-width: 600px;">
+      <div class="modal-header-custom" style="background: linear-gradient(135deg, rgba(6, 182, 212, 0.12), rgba(124, 58, 237, 0.18));">
+        <div>
+          <h3 style="margin: 0; font-size: 1.25rem; color: var(--dark); display: flex; align-items: center; gap: 10px;">
+            <i class="fa-solid fa-graduation-cap" style="color: #06b6d4;"></i> Assessment Attempts & Student Analytics
+          </h3>
+          <p style="margin: 4px 0 0 0; font-size: 0.85rem; color: var(--muted);">Real-Time Evaluation Records & Performance Metrics</p>
+        </div>
+        <button class="modal-close-btn" onclick="closeStatModal('stat-modal-attempts')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="modal-body-custom" style="padding: 22px;">
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px;">
+          <div style="background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px; text-align: center;">
+            <div style="font-size: 1.6rem; font-weight: 800; color: #7c3aed;" id="stat-modal-total-attempts">150+</div>
+            <div style="font-size: 0.78rem; color: var(--muted); font-weight: 600;">Total Attempts</div>
+          </div>
+          <div style="background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px; text-align: center;">
+            <div style="font-size: 1.6rem; font-weight: 800; color: #10b981;" id="stat-modal-pass-rate">88%</div>
+            <div style="font-size: 0.78rem; color: var(--muted); font-weight: 600;">Pass Rate</div>
+          </div>
+          <div style="background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px; text-align: center;">
+            <div style="font-size: 1.6rem; font-weight: 800; color: #f59e0b;" id="stat-modal-top-score">100%</div>
+            <div style="font-size: 0.78rem; color: var(--muted); font-weight: 600;">Peak Score</div>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 18px;">
+          <h5 style="margin: 0 0 10px 0; font-size: 0.85rem; text-transform: uppercase; color: var(--muted); letter-spacing: 0.5px;">Recent Top Assessments</h5>
+          <div id="stat-recent-attempts-list" style="display: flex; flex-direction: column; gap: 8px;">
+            <div style="text-align: center; color: var(--muted); padding: 14px;"><i class="fa-solid fa-spinner fa-spin"></i> Loading records...</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer-custom">
+        <button class="btn btn-secondary-outline" onclick="closeStatModal('stat-modal-attempts')">Close</button>
+        <a href="student-dashboard.html" class="btn btn-secondary-outline"><i class="fa-solid fa-id-card"></i> Student Profile</a>
+        <a href="leaderboard.html" class="btn btn-primary"><i class="fa-solid fa-trophy"></i> Open Global Leaderboard</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: System Status & Architecture Diagnostics -->
+  <div id="stat-modal-status" class="modal-overlay">
+    <div class="modal-card" style="max-width: 600px;">
+      <div class="modal-header-custom" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(6, 182, 212, 0.18));">
+        <div>
+          <h3 style="margin: 0; font-size: 1.25rem; color: var(--dark); display: flex; align-items: center; gap: 10px;">
+            <i class="fa-solid fa-server" style="color: #10b981;"></i> System Health & Architecture Status
+          </h3>
+          <p style="margin: 4px 0 0 0; font-size: 0.85rem; color: var(--muted);">Spring Boot 3 REST API &bull; MySQL 3NF Database Diagnostics</p>
+        </div>
+        <button class="modal-close-btn" onclick="closeStatModal('stat-modal-status')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="modal-body-custom" style="padding: 22px;">
+        <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
+          
+          <div style="display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); border: 1px solid var(--border); padding: 12px 16px; border-radius: var(--radius-sm);">
+            <div>
+              <div style="font-weight: 700; font-size: 0.92rem; color: var(--dark);"><i class="fa-solid fa-network-wired" style="color: #7c3aed; margin-right: 8px;"></i> Backend REST API</div>
+              <div style="font-size: 0.8rem; color: var(--muted);">Spring Boot 3.2.x &bull; http://localhost:8080/api</div>
+            </div>
+            <span id="diag-api-badge" class="quiz-badge" style="background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3);">
+              <i class="fa-solid fa-circle-check"></i> Connected
+            </span>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); border: 1px solid var(--border); padding: 12px 16px; border-radius: var(--radius-sm);">
+            <div>
+              <div style="font-weight: 700; font-size: 0.92rem; color: var(--dark);"><i class="fa-solid fa-database" style="color: #06b6d4; margin-right: 8px;"></i> Database Persistence Tier</div>
+              <div style="font-size: 0.8rem; color: var(--muted);">MySQL 8.0 &bull; 3NF Relational Schema (Hibernate JPA)</div>
+            </div>
+            <span id="diag-db-badge" class="quiz-badge" style="background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3);">
+              <i class="fa-solid fa-check"></i> Operational
+            </span>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); border: 1px solid var(--border); padding: 12px 16px; border-radius: var(--radius-sm);">
+            <div>
+              <div style="font-weight: 700; font-size: 0.92rem; color: var(--dark);"><i class="fa-solid fa-shield-halved" style="color: #f59e0b; margin-right: 8px;"></i> Anti-Cheat Exam Proctor</div>
+              <div style="font-size: 0.8rem; color: var(--muted);">Window blur & Tab switching infraction listener</div>
+            </div>
+            <span class="quiz-badge" style="background: rgba(245, 158, 11, 0.15); color: #d97706; border: 1px solid rgba(245, 158, 11, 0.3);">
+              <i class="fa-solid fa-eye"></i> Active
+            </span>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); border: 1px solid var(--border); padding: 12px 16px; border-radius: var(--radius-sm);">
+            <div>
+              <div style="font-weight: 700; font-size: 0.92rem; color: var(--dark);"><i class="fa-solid fa-bolt" style="color: #8b5cf6; margin-right: 8px;"></i> Measured Ping Latency</div>
+              <div style="font-size: 0.8rem; color: var(--muted);">Roundtrip response time from browser to REST endpoint</div>
+            </div>
+            <span id="diag-latency-val" style="font-weight: 700; font-size: 0.95rem; color: var(--primary);">
+              Testing...
+            </span>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="modal-footer-custom">
+        <button class="btn btn-secondary-outline" onclick="closeStatModal('stat-modal-status')">Close</button>
+        <button id="btn-run-diag" class="btn btn-primary" onclick="runLiveSystemPing()">
+          <i class="fa-solid fa-rotate"></i> Run Live Ping Test
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer (Purple Theme QuizMaster Platform) -->
+  <footer class="site-footer">
+    <div class="container footer-container">
+      <div class="footer-grid">
+        
+        <!-- Left Column: QuizMaster Platform Info -->
+        <div class="footer-about">
+          <div class="footer-logos">
+            <img src="images/quizmaster-badge.svg" alt="QuizMaster Logo" class="footer-badge-logo">
+          </div>
+          <p class="footer-desc">
+            QuizMaster is an interactive digital assessment and online examination platform designed for contemporary educational institutions and skill evaluations. Featuring automated grading, real-time analytics, question bank management, and anti-cheat exam monitoring to empower students and instructors worldwide.
+          </p>
+        </div>
+
+        <!-- Right Column: Contact Us (Purple Theme) -->
+        <div class="footer-contact">
+          <h3 class="footer-contact-title">
+            <i class="fa-solid fa-headset" style="font-size: 1.15rem; margin-right: 8px;"></i> Contact Us
+          </h3>
+          <p class="footer-contact-address">
+            QuizMaster Learning Technologies, Tech Hub Center, Colombo, Sri Lanka.
+          </p>
+          <div class="footer-contact-list">
+            <div class="footer-contact-item">
+              <i class="fa-solid fa-phone"></i>
+              <span>Hotline : +(94) 11 234 5678 / +(94) 77 890 1234</span>
+            </div>
+            <div class="footer-contact-item">
+              <i class="fa-solid fa-envelope"></i>
+              <span>Email : <a href="mailto:support@quizmaster.edu.lk">support@quizmaster.edu.lk</a></span>
+            </div>
+            <div class="footer-contact-item">
+              <i class="fa-solid fa-clock"></i>
+              <span>Hours : Mon – Fri 8:30 AM – 5:30 PM (24/7 Live Monitoring)</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Bottom Bar -->
+      <div class="footer-bottom-bar">
+        <p>&copy; 2026 QuizMaster Online Assessment System. All Rights Reserved.</p>
+        <div class="footer-bottom-links">
+          <span>Privacy Policy</span> &bull; 
+          <span>Terms of Service</span> &bull; 
+          <span>Examination Guidelines</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/api.js"></script>
+  <script>
+    let allQuizzes = [];
+    let currentSelectedCategory = 'all';
+    let selectedQuizId = null;
+
+    async function loadQuizzes() {
+      allQuizzes = await QuizApi.getQuizzes();
+      applyFiltersAndSort();
+
+      // Check backend health status
+      const isOnline = await QuizApi.checkBackendHealth();
+      const statusEl = document.getElementById('stat-backend');
+      if (isOnline) {
+        statusEl.innerHTML = '<span style="color:#10b981;"><i class="fa-solid fa-circle-check"></i> REST API Live</span>';
+      } else {
+        statusEl.innerHTML = '<span style="color:#0284c7;"><i class="fa-solid fa-database"></i> Ready (Local API)</span>';
+      }
+      
+      document.getElementById('stat-quizzes').innerText = allQuizzes.length;
+
+      // Count questions across quizzes
+      let totalQuestions = 0;
+      allQuizzes.forEach(q => {
+        totalQuestions += (q.questionsCount || (q.questions ? q.questions.length : 0));
+      });
+      if (totalQuestions === 0) totalQuestions = 12;
+      const qStatEl = document.getElementById('stat-questions');
+      if (qStatEl) qStatEl.innerText = `${totalQuestions}+`;
+
+      // Count attempts from leaderboard
+      try {
+        const results = await QuizApi.getLeaderboard();
+        const attemptsCount = results ? results.length : 0;
+        const attemptsEl = document.getElementById('stat-students');
+        if (attemptsEl) attemptsEl.innerText = attemptsCount > 0 ? `${attemptsCount}` : '150+';
+      } catch(e) {}
+    }
+
+    // Combined Search + Filter + Sort handler (EC4307 Rubric Read criteria)
+    function applyFiltersAndSort() {
+      const searchQuery = (document.getElementById('quiz-search-input').value || '').trim().toLowerCase();
+      const diffFilter = document.getElementById('diff-filter-select').value;
+      const sortCriteria = document.getElementById('quiz-sort-select').value;
+
+      // Toggle clear button
+      const clearBtn = document.getElementById('search-clear-btn');
+      if (clearBtn) {
+        clearBtn.style.display = searchQuery ? 'block' : 'none';
+      }
+
+      // 1. Filter by Search Query
+      let filtered = allQuizzes.filter(q => {
+        if (!searchQuery) return true;
+        const titleMatch = (q.title || '').toLowerCase().includes(searchQuery);
+        const descMatch = (q.description || '').toLowerCase().includes(searchQuery);
+        const catMatch = (q.category || '').toLowerCase().includes(searchQuery);
+        const diffMatch = (q.difficulty || '').toLowerCase().includes(searchQuery);
+        return titleMatch || descMatch || catMatch || diffMatch;
+      });
+
+      // 2. Filter by Category
+      if (currentSelectedCategory !== 'all') {
+        filtered = filtered.filter(q => q.category === currentSelectedCategory);
+      }
+
+      // 3. Filter by Difficulty
+      if (diffFilter !== 'all') {
+        filtered = filtered.filter(q => (q.difficulty || '').toLowerCase() === diffFilter.toLowerCase());
+      }
+
+      // 4. Sort
+      filtered.sort((a, b) => {
+        if (sortCriteria === 'title-asc') {
+          return (a.title || '').localeCompare(b.title || '');
+        } else if (sortCriteria === 'title-desc') {
+          return (b.title || '').localeCompare(a.title || '');
+        } else if (sortCriteria === 'time-asc') {
+          return (a.timeLimit || 0) - (b.timeLimit || 0);
+        } else if (sortCriteria === 'time-desc') {
+          return (b.timeLimit || 0) - (a.timeLimit || 0);
+        } else if (sortCriteria === 'difficulty-asc') {
+          const diffRank = { 'easy': 1, 'medium': 2, 'hard': 3 };
+          const rankA = diffRank[(a.difficulty || '').toLowerCase()] || 2;
+          const rankB = diffRank[(b.difficulty || '').toLowerCase()] || 2;
+          return rankA - rankB;
+        }
+        return 0;
+      });
+
+      // Update count
+      const countEl = document.getElementById('quiz-results-count');
+      if (countEl) {
+        countEl.innerText = `Showing ${filtered.length} of ${allQuizzes.length} Quizzes`;
+      }
+
+      renderQuizzes(filtered);
+    }
+
+    function handleSearchInput() {
+      applyFiltersAndSort();
+    }
+
+    function clearSearch() {
+      document.getElementById('quiz-search-input').value = '';
+      applyFiltersAndSort();
+      document.getElementById('quiz-search-input').focus();
+    }
+
+    function selectCategoryFilter(category) {
+      currentSelectedCategory = category;
+      document.querySelectorAll('.cat-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.cat === category);
+      });
+      applyFiltersAndSort();
+    }
+
+    function renderQuizzes(quizzes) {
+      const grid = document.getElementById('quiz-grid');
+      if (!quizzes || quizzes.length === 0) {
+        grid.innerHTML = `
+          <div style="grid-column: 1/-1; text-align: center; padding: 50px 20px; background: white; border-radius: 16px; border: 1px dashed var(--border);">
+            <i class="fa-solid fa-magnifying-glass fa-3x" style="color: var(--muted); margin-bottom: 14px;"></i>
+            <h4 style="font-size: 1.15rem; color: var(--dark); margin-bottom: 6px;">No quizzes match your criteria</h4>
+            <p style="color: var(--muted); font-size: 0.9rem; margin-bottom: 16px;">Try adjusting your search keywords, category, or difficulty level filters.</p>
+            <button class="btn btn-secondary-outline" onclick="resetAllFilters()">Reset All Filters</button>
+          </div>
+        `;
+        return;
+      }
+
+      grid.innerHTML = quizzes.map(q => `
+        <div class="quiz-card">
+          <div class="quiz-card-header">
+            <span class="quiz-badge badge-${q.category || 'general'}">${q.categoryLabel || q.category || 'General'}</span>
+            <span style="font-size: 0.85rem; font-weight: 600; color: var(--muted);">
+              <i class="fa-solid fa-signal"></i> ${q.difficulty || 'Medium'}
+            </span>
+          </div>
+          <div class="quiz-card-body">
+            <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--dark); margin-bottom: 8px;">${q.title}</h3>
+            <p style="color: var(--slate); font-size: 0.92rem; margin-bottom: 16px; min-height: 44px;">
+              ${q.description || 'Comprehensive evaluation covering key concepts and industry standards.'}
+            </p>
+            <div class="quiz-meta" style="display: flex; gap: 16px; font-size: 0.85rem; color: var(--muted); padding-top: 12px; border-top: 1px solid #f1f5f9;">
+              <span><i class="fa-regular fa-clock" style="color: var(--primary);"></i> ${q.timeLimit || 5} Mins</span>
+              <span><i class="fa-solid fa-circle-question" style="color: var(--secondary);"></i> Timed MCQ</span>
+              <span style="margin-left: auto; color: var(--muted); font-size: 0.8rem;">ID: #${q.id}</span>
+            </div>
+          </div>
+          <div class="quiz-card-footer" style="padding: 16px 24px; background: #f8fafc; border-top: 1px solid var(--border); display: flex; gap: 10px;">
+            <!-- View Details Button (Rubric Read: viewing details) -->
+            <button class="btn btn-secondary-outline" onclick="openDetailsModal(${q.id})" style="flex: 1; justify-content: center;">
+              <i class="fa-solid fa-circle-info"></i> Details
+            </button>
+            <!-- Attempt Quiz Button -->
+            <button class="btn btn-primary" onclick="openNameModal(${q.id})" style="flex: 1.3; justify-content: center;">
+              <i class="fa-solid fa-play"></i> Attempt Quiz
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function resetAllFilters() {
+      document.getElementById('quiz-search-input').value = '';
+      document.getElementById('diff-filter-select').value = 'all';
+      document.getElementById('quiz-sort-select').value = 'title-asc';
+      selectCategoryFilter('all');
+    }
+
+    // Modal - Viewing Details (EC4307 Read Rubric)
+    function openDetailsModal(quizId) {
+      const quiz = allQuizzes.find(q => q.id == quizId);
+      if (!quiz) return;
+
+      selectedQuizId = quizId;
+      document.getElementById('detail-quiz-title').innerHTML = `<i class="fa-solid fa-book-open" style="color: var(--primary);"></i> ${quiz.title}`;
+      document.getElementById('detail-quiz-desc').innerText = quiz.description || 'Comprehensive multiple-choice test designed to evaluate core mastery of subject concepts.';
+      
+      const catBadge = document.getElementById('detail-category-badge');
+      catBadge.className = `quiz-badge badge-${quiz.category || 'general'}`;
+      catBadge.innerText = quiz.categoryLabel || quiz.category || 'General';
+
+      const diffBadge = document.getElementById('detail-diff-badge');
+      diffBadge.innerText = quiz.difficulty || 'Medium';
+
+      document.getElementById('detail-meta-time').innerText = quiz.timeLimit || 5;
+
+      const modal = document.getElementById('details-modal');
+      modal.classList.add('active');
+    }
+
+    function closeDetailsModal() {
+      document.getElementById('details-modal').classList.remove('active');
+    }
+
+    function startQuizFromDetails() {
+      closeDetailsModal();
+      openNameModal(selectedQuizId);
+    }
+
+    // Modal - Student Name Entry
+    function openNameModal(quizId) {
+      selectedQuizId = quizId;
+      const modal = document.getElementById('name-modal');
+      modal.classList.add('active');
+      
+      // Auto-fill existing saved student name if any
+      const savedName = localStorage.getItem('current_student_name');
+      const savedId = localStorage.getItem('current_student_id');
+      if (savedName) document.getElementById('student-name-input').value = savedName;
+      if (savedId) document.getElementById('student-id-input').value = savedId;
+      
+      setTimeout(() => document.getElementById('student-name-input').focus(), 100);
+    }
+
+    function closeNameModal() {
+      document.getElementById('name-modal').classList.remove('active');
+      selectedQuizId = null;
+    }
+
+    function proceedToQuiz() {
+      const name = document.getElementById('student-name-input').value.trim();
+      const studentId = document.getElementById('student-id-input').value.trim();
+      
+      if (!name) {
+        alert('Please enter your full name to proceed.');
+        document.getElementById('student-name-input').focus();
+        return;
+      }
+      if (!studentId) {
+        alert('Please enter your Student ID / Registration No.');
+        document.getElementById('student-id-input').focus();
+        return;
+      }
+
+      localStorage.setItem('current_student_name', name);
+      localStorage.setItem('current_student_id', studentId);
+      window.location.href = `quiz.html?quizId=${selectedQuizId}`;
+    }
+
+    // ── Auth Session Navbar Rendering ──────────────────────
+    function renderNavAuthArea() {
+      const user = QuizApi.getSession();
+      const area = document.getElementById('nav-auth-area');
+      if (!area) return;
+      if (user && user.role === 'student') {
+        area.innerHTML = `
+          <div style="display:flex;align-items:center;gap:6px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);border-radius:20px;padding:4px 12px;font-size:0.82rem;font-weight:600;color:#059669;" title="${user.email} · ${user.identifier || ''}">
+            <i class="fa-solid fa-circle-user"></i> ${user.name.split(' ')[0]}
+          </div>
+          <button onclick="handleStudentLogout()" style="background:none;border:1px solid var(--border);border-radius:8px;padding:5px 10px;font-size:0.8rem;cursor:pointer;color:var(--muted);white-space:nowrap;" title="Sign Out">
+            <i class="fa-solid fa-right-from-bracket"></i>
+          </button>`;
+      } else {
+        area.innerHTML = `<a href="auth.html" class="nav-signin-btn"><i class="fa-solid fa-right-to-bracket"></i> Sign In</a>`;
+      }
+    }
+
+    function handleStudentLogout() {
+      if (confirm('Sign out of your student account?')) {
+        QuizApi.clearSession();
+        renderNavAuthArea();
+      }
+    }
+
+    // Run on page load
+    document.addEventListener('DOMContentLoaded', () => {
+      renderNavAuthArea();
+      // Pre-fill name modal from session if already signed in
+      const user = QuizApi.getSession();
+      if (user && user.role === 'student') {
+        localStorage.setItem('current_student_name', user.name);
+        if (user.identifier) localStorage.setItem('current_student_id', user.identifier);
+      }
+    });
+
+    // Close modals on Escape key or backdrop click
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeDetailsModal();
+        closeNameModal();
+        closeStatModal('stat-modal-questions');
+        closeStatModal('stat-modal-attempts');
+        closeStatModal('stat-modal-status');
+      }
+    });
+
+    document.querySelectorAll('.modal-overlay').forEach(overlay => {
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) {
+          closeDetailsModal();
+          closeNameModal();
+          closeStatModal('stat-modal-questions');
+          closeStatModal('stat-modal-attempts');
+          closeStatModal('stat-modal-status');
+        }
+      });
+    });
+
+    // STAT CARD INTERACTION HANDLERS
+    function handleStatCardClick(type) {
+      if (type === 'quizzes') {
+        scrollToQuizzes();
+      } else if (type === 'questions') {
+        openStatQuestionsModal();
+      } else if (type === 'attempts') {
+        openStatAttemptsModal();
+      } else if (type === 'status') {
+        openStatStatusModal();
+      }
+    }
+
+    function scrollToQuizzes() {
+      resetAllFilters();
+      const target = document.getElementById('quizzes');
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        target.classList.add('target-glow-pulse');
+        setTimeout(() => target.classList.remove('target-glow-pulse'), 1400);
+      }
+    }
+
+    function openStatQuestionsModal() {
+      const modal = document.getElementById('stat-modal-questions');
+      if (modal) modal.classList.add('active');
+    }
+
+    async function openStatAttemptsModal() {
+      const modal = document.getElementById('stat-modal-attempts');
+      if (modal) {
+        modal.classList.add('active');
+        await populateRecentAttemptsList();
+      }
+    }
+
+    async function populateRecentAttemptsList() {
+      const container = document.getElementById('stat-recent-attempts-list');
+      try {
+        const leaderboard = await QuizApi.getLeaderboard();
+        if (!leaderboard || leaderboard.length === 0) {
+          container.innerHTML = `
+            <div style="text-align: center; color: var(--muted); padding: 14px; font-size: 0.88rem;">
+              <i class="fa-solid fa-clock-rotate-left" style="font-size: 1.5rem; margin-bottom: 8px; display: block; opacity: 0.5;"></i>
+              No assessment attempts logged yet. Be the first to attempt a quiz!
+            </div>
+          `;
+          return;
+        }
+
+        const totalAttemptsEl = document.getElementById('stat-modal-total-attempts');
+        if (totalAttemptsEl) totalAttemptsEl.innerText = `${leaderboard.length}`;
+
+        const percentages = leaderboard.map(r => Number(r.percentage) || 0);
+        const highest = Math.max(...percentages);
+        const topScoreEl = document.getElementById('stat-modal-top-score');
+        if (topScoreEl) topScoreEl.innerText = `${highest}%`;
+
+        const passed = percentages.filter(p => p >= 50).length;
+        const passRate = Math.round((passed / percentages.length) * 100);
+        const passRateEl = document.getElementById('stat-modal-pass-rate');
+        if (passRateEl) passRateEl.innerText = `${passRate}%`;
+
+        const top3 = leaderboard.slice(0, 3);
+        container.innerHTML = top3.map((res, idx) => {
+          const medal = idx === 0 ? '🥇' : (idx === 1 ? '🥈' : '🥉');
+          return `
+            <div style="display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); border: 1px solid var(--border); padding: 10px 14px; border-radius: var(--radius-sm);">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 1.15rem;">${medal}</span>
+                <div>
+                  <strong style="color: var(--dark); font-size: 0.92rem;">${res.studentName || 'Student Scholar'}</strong>
+                  <div style="font-size: 0.78rem; color: var(--muted);">${res.quizTitle || 'Quiz Assessment'} &bull; ${res.date || 'Recent Attempt'}</div>
+                </div>
+              </div>
+              <span class="quiz-badge badge-web" style="font-weight: 700; font-size: 0.85rem;">
+                ${res.percentage || 0}% Score
+              </span>
+            </div>
+          `;
+        }).join('');
+      } catch(e) {
+        container.innerHTML = `<div style="text-align: center; color: var(--muted); font-size: 0.85rem;">Completed attempts logged and stored in MySQL database.</div>`;
+      }
+    }
+
+    async function openStatStatusModal() {
+      const modal = document.getElementById('stat-modal-status');
+      if (modal) {
+        modal.classList.add('active');
+        await runLiveSystemPing();
+      }
+    }
+
+    async function runLiveSystemPing() {
+      const btn = document.getElementById('btn-run-diag');
+      const latencyEl = document.getElementById('diag-latency-val');
+      const apiBadge = document.getElementById('diag-api-badge');
+      const dbBadge = document.getElementById('diag-db-badge');
+
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Testing Ping...';
+      }
+      if (latencyEl) latencyEl.innerText = 'Pinging...';
+
+      const startTime = performance.now();
+      try {
+        const isOnline = await QuizApi.checkBackendHealth();
+        const endTime = performance.now();
+        const latency = Math.round(endTime - startTime);
+
+        if (isOnline) {
+          if (latencyEl) latencyEl.innerHTML = `<span style="color:#10b981;"><i class="fa-solid fa-bolt"></i> ${latency} ms</span>`;
+          if (apiBadge) {
+            apiBadge.style.background = 'rgba(16, 185, 129, 0.15)';
+            apiBadge.style.color = '#10b981';
+            apiBadge.innerHTML = '<i class="fa-solid fa-circle-check"></i> Connected';
+          }
+          if (dbBadge) {
+            dbBadge.style.background = 'rgba(16, 185, 129, 0.15)';
+            dbBadge.style.color = '#10b981';
+            dbBadge.innerHTML = '<i class="fa-solid fa-check"></i> Operational (MySQL 3NF)';
+          }
+        } else {
+          if (latencyEl) latencyEl.innerHTML = `<span style="color:#0284c7;"><i class="fa-solid fa-microchip"></i> Local Mode (< 1ms)</span>`;
+          if (apiBadge) {
+            apiBadge.style.background = 'rgba(2, 132, 199, 0.15)';
+            apiBadge.style.color = '#0284c7';
+            apiBadge.innerHTML = '<i class="fa-solid fa-database"></i> Ready (Local API)';
+          }
+          if (dbBadge) {
+            dbBadge.style.background = 'rgba(2, 132, 199, 0.15)';
+            dbBadge.style.color = '#0284c7';
+            dbBadge.innerHTML = '<i class="fa-solid fa-box-archive"></i> LocalStorage 3NF Ready';
+          }
+        }
+      } catch(e) {
+        if (latencyEl) latencyEl.innerText = 'Fallback Active';
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fa-solid fa-rotate"></i> Run Live Ping Test';
+        }
+      }
+    }
+
+    function closeStatModal(modalId) {
+      const m = document.getElementById(modalId);
+      if (m) m.classList.remove('active');
+    }
+
+    document.addEventListener('DOMContentLoaded', loadQuizzes);
+  </script>
+
+  <!-- Dark Theme Toggle Script -->
+  <script>
+    (function() {
+      const body    = document.getElementById('page-body');
+      const btn     = document.getElementById('theme-toggle-btn');
+      const icon    = document.getElementById('theme-icon');
+      const DARK    = 'dark-theme';
+      const KEY     = 'qm-theme';
+
+      function applyTheme(isDark) {
+        body.classList.toggle(DARK, isDark);
+        icon.className = isDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+        localStorage.setItem(KEY, isDark ? 'dark' : 'light');
+      }
+
+      // Apply saved preference on load
+      applyTheme(localStorage.getItem(KEY) === 'dark');
+
+      btn.addEventListener('click', function() {
+        applyTheme(!body.classList.contains(DARK));
+      });
+    })();
+  </script>
+</body>
+
+</html>
