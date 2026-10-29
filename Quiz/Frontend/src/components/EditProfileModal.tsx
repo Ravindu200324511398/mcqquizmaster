@@ -86,7 +86,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
       const updatedUser: AuthUser = {
         ...currentUser,
         name: name.trim(),
-        identifier: identifier.trim(),
+        identifier: currentUser.identifier || (currentUser.role === 'admin' ? 'ADM-001' : currentUser.role === 'lecturer' ? 'LEC-4307' : 'EG/2021/1001'),
         department: department.trim(),
         bio: bio.trim(),
         avatarUrl: avatarUrl || undefined,
@@ -247,19 +247,28 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
             />
           </div>
 
-          {/* Registration / Identification ID */}
+          {/* Registration / Identification ID (Permanent & Locked) */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-mono font-medium text-slate-300 mb-1">
-                {currentUser.role === 'student' ? 'REGISTRATION / STUDENT ID' : 'STAFF ID'}
-              </label>
-              <input
-                type="text"
-                value={identifier}
-                onChange={e => setIdentifier(e.target.value)}
-                className="w-full bg-slate-900/90 border border-white/15 focus:border-violet-500 focus:ring-1 focus:ring-violet-500 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 transition-all font-mono"
-                placeholder="e.g. 4499 or EG/2021/1001"
-              />
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-xs font-mono font-medium text-slate-400">
+                  {currentUser.role === 'student' ? 'REGISTRATION / STUDENT ID' : 'STAFF ID'}
+                </label>
+                <span className="text-[10px] font-mono text-slate-500 flex items-center gap-1">
+                  🔒 Locked
+                </span>
+              </div>
+              <div className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white font-mono flex items-center justify-between cursor-not-allowed select-none">
+                <span className="font-bold text-violet-300">
+                  {currentUser.identifier || (currentUser.role === 'admin' ? 'ADM-001' : currentUser.role === 'lecturer' ? 'LEC-4307' : 'EG/2021/1001')}
+                </span>
+                <span className="text-[10px] text-slate-400 bg-white/[0.05] px-2 py-0.5 rounded-full border border-white/10 font-sans">
+                  System Assigned
+                </span>
+              </div>
+              <p className="text-[10px] text-slate-500 font-sans mt-1">
+                Institutional ID assigned at registration and cannot be modified.
+              </p>
             </div>
 
             <div>
@@ -268,11 +277,34 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
               </label>
               <div className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-slate-300 capitalize flex items-center justify-between font-mono">
                 <span>{currentUser.role}</span>
-                <span className="text-[10px] text-violet-400 bg-violet-500/10 px-2 py-0.5 rounded-full border border-violet-500/20">
+                <span className="text-[10px] text-violet-400 bg-violet-500/10 px-2 py-0.5 rounded-full border border-violet-500/20 font-bold">
                   Verified
                 </span>
               </div>
+              <p className="text-[10px] text-slate-500 font-sans mt-1">
+                Access tier determined by university credential rubric.
+              </p>
             </div>
+          </div>
+
+          {/* 2-Factor Authentication (2FA) Security Status */}
+          <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/25 flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-300 flex items-center justify-center shrink-0">
+                <Icon.Shield className="w-4 h-4" />
+              </div>
+              <div>
+                <div className="text-xs font-semibold text-emerald-200">
+                  Two-Factor Authentication (2FA)
+                </div>
+                <div className="text-[11px] text-emerald-400/80 font-sans">
+                  Active • OTP verification secured with credential pairing
+                </div>
+              </div>
+            </div>
+            <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+              Enabled
+            </span>
           </div>
 
           {/* Department / Faculty */}

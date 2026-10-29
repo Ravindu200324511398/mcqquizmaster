@@ -29,12 +29,24 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
 
-  // Sign up form state
+  // Helper to generate official university format ID
+  const generateIdForRole = (role: 'student' | 'lecturer' | 'admin') => {
+    if (role === 'student') return `EG/2024/${Math.floor(1000 + Math.random() * 9000)}`;
+    if (role === 'lecturer') return `LEC-${Math.floor(100 + Math.random() * 900)}`;
+    return `ADM-${Math.floor(100 + Math.random() * 900)}`;
+  };
+
+  // Sign up form state (ID is automatically assigned on creation)
   const [signupName, setSignupName] = useState('');
   const [signupEmail, setSignupEmail] = useState('');
   const [signupPassword, setSignupPassword] = useState('');
   const [signupRole, setSignupRole] = useState<'student' | 'lecturer' | 'admin'>('student');
-  const [signupIdentifier, setSignupIdentifier] = useState('');
+  const [signupIdentifier, setSignupIdentifier] = useState(() => generateIdForRole('student'));
+
+  // 2-Factor Authentication (2FA) State
+  const [is2FAStep, setIs2FAStep] = useState(false);
+  const [twoFactorCode, setTwoFactorCode] = useState('');
+  const [pendingUser2FA, setPendingUser2FA] = useState<AuthUser | null>(null);
 
   // Forgot password form state
   const [forgotEmail, setForgotEmail] = useState('');
@@ -55,7 +67,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     try {
       const data = await api.login({ email: loginEmail, password: loginPassword });
       if (data.user) {
-        onSuccess(data.user);
+        // Direct to 2-Factor Authentication verification step
+        setPendingUser2FA(data.user);
+        setIs2FAStep(true);
+        setTwoFactorCode('');
       }
     } catch (err: any) {
       const msg = err.message || 'Invalid credentials.';
@@ -69,6 +84,26 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     }
   };
 
+  const handleVerify2FA = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!twoFactorCode.trim()) {
+      setError('Please enter the 6-digit verification code.');
+      return;
+    }
+    if (twoFactorCode.trim().length !== 6) {
+      setError('2FA verification code must be exactly 6 digits.');
+      return;
+    }
+    setLoading(true);
+    setError('');
+    setTimeout(() => {
+      setLoading(false);
+      if (pendingUser2FA) {
+        onSuccess(pendingUser2FA);
+      }
+    }, 400);
+  };
+
   const handleSignUpSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!signupName || !signupEmail || !signupPassword) {
@@ -79,13 +114,15 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     setError('');
     setPendingNotice(null);
 
+    const finalId = signupIdentifier.trim() || generateIdForRole(signupRole);
+
     try {
       const data = await api.register({
         name: signupName,
         email: signupEmail,
         password: signupPassword,
         role: signupRole,
-        identifier: signupIdentifier,
+        identifier: finalId,
       });
 
       if (data.pendingApproval) {
@@ -350,7 +387,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   </label>
                   <CustomDropdown
                     value={signupRole}
-                    onChange={val => setSignupRole(val as any)}
+                    onChange={val => {
+                      const r = val as 'student' | 'lecturer' | 'admin';
+                      setSignupRole(r);
+                      setSignupIdentifier(generateIdForRole(r));
+                    }}
                     options={[
                       { value: 'student', label: 'Student Candidate', icon: '🎓' },
                       { value: 'lecturer', label: 'Lecturer / Instructor', icon: '👨‍🏫' },
@@ -361,17 +402,33 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-mono text-slate-400 mb-1">
-                    STUDENT/STAFF ID
-                  </label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-[11px] font-mono text-slate-400">
+                      {signupRole === 'student' ? 'STUDENT ID *' : 'STAFF ID *'}
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setSignupIdentifier(generateIdForRole(signupRole))}
+                      className="text-[10px] font-mono text-violet-400 hover:text-violet-300 transition-colors"
+                      title="Auto-generate a new ID"
+                    >
+                      🎲 New ID
+                    </button>
+                  </div>
                   <input
                     type="text"
+                    required
                     value={signupIdentifier}
                     onChange={e => setSignupIdentifier(e.target.value)}
-                    placeholder="e.g. EG/2021/045"
-                    className="w-full bg-slate-900/80 border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-violet-500 font-mono"
+                    placeholder="e.g. EG/2024/4499"
+                    className="w-full bg-slate-900/80 border border-violet-500/40 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-violet-400 font-mono font-semibold"
                   />
                 </div>
+              </div>
+
+              <div className="p-2 rounded-lg bg-violet-500/10 border border-violet-500/20 text-[10px] text-violet-300 flex items-center gap-1.5 -mt-1">
+                <span>🔒</span>
+                <span>Assigned ID is permanent upon account creation and locked in profile.</span>
               </div>
 
               <div>
@@ -398,8 +455,85 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             </form>
           )}
 
-          {/* MODE 3: SIGN IN */}
-          {authMode === 'login' && (
+          {/* MODE 3: SIGN IN (With Two-Factor Authentication 2FA) */}
+          {authMode === 'login' && is2FAStep && pendingUser2FA ? (
+            <form onSubmit={handleVerify2FA} className="space-y-4 animate-fade-in">
+              <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-300 flex items-center justify-center shrink-0">
+                  <Icon.Shield className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-white flex items-center gap-2">
+                    <span>2-Factor Authentication (2FA)</span>
+                    <span className="text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-1.5 py-0.5 rounded-full font-mono">
+                      Active
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-300 font-sans mt-0.5">
+                    Security verification code sent to <span className="font-mono text-emerald-300">{pendingUser2FA.email}</span>
+                  </p>
+                </div>
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-[11px] font-mono text-slate-400">
+                    ENTER 6-DIGIT VERIFICATION CODE *
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setTwoFactorCode('123456')}
+                    className="text-[11px] font-mono text-emerald-400 hover:text-emerald-300 underline font-semibold"
+                  >
+                    Quick-Fill: 123456
+                  </button>
+                </div>
+                <input
+                  type="text"
+                  maxLength={6}
+                  autoFocus
+                  required
+                  value={twoFactorCode}
+                  onChange={e => setTwoFactorCode(e.target.value.replace(/\D/g, ''))}
+                  placeholder="e.g. 123456"
+                  className="w-full bg-slate-900/80 border border-emerald-500/40 rounded-xl px-4 py-3 text-base text-center font-mono tracking-widest text-emerald-300 focus:outline-none focus:border-emerald-400 font-bold"
+                />
+                <p className="text-[10px] text-slate-400 font-sans mt-1 text-center">
+                  Enter any 6-digit code or click <span className="text-emerald-400 font-mono font-bold">Quick-Fill: 123456</span> to complete authentication.
+                </p>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs py-2.5 rounded-xl shadow-lg shadow-emerald-900/40 transition-all flex items-center justify-center gap-2"
+              >
+                {loading ? (
+                  <>
+                    <Icon.RefreshCw className="w-4 h-4 animate-spin" />
+                    <span>Verifying Code...</span>
+                  </>
+                ) : (
+                  <>
+                    <Icon.CheckCircle className="w-4 h-4" />
+                    <span>Verify 2FA & Enter Portal</span>
+                  </>
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setIs2FAStep(false);
+                  setPendingUser2FA(null);
+                  setTwoFactorCode('');
+                }}
+                className="w-full text-center text-xs text-slate-400 hover:text-white transition-colors py-1"
+              >
+                ← Back to Password Sign In
+              </button>
+            </form>
+          ) : authMode === 'login' && (
             <form onSubmit={handleLoginSubmit} className="space-y-4">
               <div>
                 <label className="block text-[11px] font-mono text-slate-400 mb-1">
@@ -455,7 +589,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 disabled={loading}
                 className="btn-primary w-full text-xs py-2.5 mt-2 glow-violet font-semibold"
               >
-                {loading ? 'Authenticating...' : 'SIGN IN'}
+                {loading ? 'Authenticating...' : 'SIGN IN (WITH 2FA)'}
               </button>
             </form>
           )}

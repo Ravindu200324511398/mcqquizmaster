@@ -683,7 +683,7 @@ export const api = {
           name: payload.name,
           email: payload.email,
           role: 'student',
-          identifier: payload.identifier || 'EG/2021/1001',
+          identifier: payload.identifier || `EG/2024/${Math.floor(1000 + Math.random() * 9000)}`,
           status: 'APPROVED'
         }
       };
