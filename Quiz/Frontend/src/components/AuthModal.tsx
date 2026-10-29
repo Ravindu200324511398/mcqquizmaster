@@ -402,26 +402,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 </div>
 
                 <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <div className="flex items-center gap-1.5">
-                      <label className="block text-[11px] font-mono text-slate-400 font-medium">
-                        {signupRole === 'student' ? 'STUDENT ID' : 'STAFF ID'}
-                      </label>
-                      <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-violet-500/20 text-violet-300 border border-violet-500/30 font-semibold">
-                        🔒 READ-ONLY
-                      </span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setSignupIdentifier(generateIdForRole(signupRole))}
-                      className="text-[10px] font-mono text-violet-400 hover:text-violet-300 transition-colors flex items-center gap-1 px-1.5 py-0.5 rounded bg-violet-500/10 border border-violet-500/20 hover:bg-violet-500/20"
-                      title="Auto-generate a new ID"
-                    >
-                      <span>🎲</span>
-                      <span>New ID</span>
-                    </button>
-                  </div>
-                  <div className="relative">
+                  <label className="block text-[11px] font-mono text-slate-400 font-medium mb-1 whitespace-nowrap">
+                    {signupRole === 'student' ? 'STUDENT ID' : 'STAFF ID'}{' '}
+                    <span className="text-violet-400 font-sans font-normal">(read only)</span>
+                  </label>
+                  <div className="relative flex items-center">
                     <input
                       type="text"
                       readOnly
@@ -429,25 +414,22 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                       value={signupIdentifier}
                       aria-readonly="true"
                       onKeyDown={e => {
-                        // Prevent manual editing while allowing copy (Cmd/Ctrl + C)
                         if (!(e.metaKey || e.ctrlKey)) {
                           e.preventDefault();
                         }
                       }}
-                      className="w-full bg-slate-900/90 border border-violet-500/40 rounded-xl pl-3 pr-24 py-2 text-xs text-violet-300 font-mono font-bold cursor-not-allowed select-all focus:outline-none"
+                      className="w-full bg-slate-900/90 border border-violet-500/40 rounded-xl pl-3 pr-9 py-2 text-xs text-violet-300 font-mono font-bold cursor-not-allowed select-all focus:outline-none"
                     />
-                    <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center pointer-events-none">
-                      <span className="text-[9px] text-slate-400 bg-white/[0.06] border border-white/10 px-2 py-0.5 rounded-full font-sans font-medium">
-                        System Assigned
-                      </span>
-                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setSignupIdentifier(generateIdForRole(signupRole))}
+                      className="absolute right-1.5 p-1 rounded-lg text-slate-400 hover:text-violet-300 hover:bg-violet-500/20 transition-all text-xs"
+                      title="Roll an alternative random ID"
+                    >
+                      🎲
+                    </button>
                   </div>
                 </div>
-              </div>
-
-              <div className="p-2 rounded-lg bg-violet-500/10 border border-violet-500/20 text-[10px] text-violet-300 flex items-center gap-1.5 -mt-1">
-                <span>🔒</span>
-                <span>System auto-assigned ID is read-only and permanently linked upon registration.</span>
               </div>
 
               <div>

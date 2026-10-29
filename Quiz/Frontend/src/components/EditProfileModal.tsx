@@ -252,11 +252,9 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
             <div>
               <div className="flex items-center justify-between mb-1">
                 <label className="block text-xs font-mono font-medium text-slate-400">
-                  {currentUser.role === 'student' ? 'REGISTRATION / STUDENT ID' : 'STAFF ID'}
+                  {currentUser.role === 'student' ? 'REGISTRATION / STUDENT ID' : 'STAFF ID'}{' '}
+                  <span className="text-violet-400 font-sans font-normal">(read only)</span>
                 </label>
-                <span className="text-[10px] font-mono text-slate-500 flex items-center gap-1">
-                  🔒 Locked
-                </span>
               </div>
               <div className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white font-mono flex items-center justify-between cursor-not-allowed select-none">
                 <span className="font-bold text-violet-300">

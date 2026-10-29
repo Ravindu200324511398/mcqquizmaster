@@ -110,16 +110,14 @@ export const QuizDetailsModal: React.FC<QuizDetailsModalProps> = ({
           </div>
 
           <div>
-            <div className="flex items-center justify-between mb-1">
-              <label className="block text-xs font-medium text-slate-300">
-                Student Registration ID <span className="text-rose-400">*</span>
-              </label>
-              {isIdLocked && (
-                <span className="text-[10px] font-mono text-violet-400 bg-violet-500/10 px-2 py-0.5 rounded border border-violet-500/20 flex items-center gap-1">
-                  🔒 Locked (Read-Only)
-                </span>
+            <label className="block text-xs font-medium text-slate-300 mb-1">
+              Student Registration ID{' '}
+              {isIdLocked ? (
+                <span className="text-violet-400 font-sans font-normal">(read only)</span>
+              ) : (
+                <span className="text-rose-400">*</span>
               )}
-            </div>
+            </label>
             <input
               type="text"
               readOnly={isIdLocked}
@@ -137,11 +135,6 @@ export const QuizDetailsModal: React.FC<QuizDetailsModalProps> = ({
                   : 'bg-slate-900/70 border border-white/10 text-white focus:outline-none focus:border-violet-500'
               }`}
             />
-            {isIdLocked && (
-              <p className="text-[10px] text-slate-500 mt-1">
-                Official institutional ID linked to candidate account and cannot be modified.
-              </p>
-            )}
           </div>
 
           {error && (
