@@ -336,55 +336,64 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
         </div>
       )}
 
-      {/* Admin / Lecturer Header */}
-      <div className="card liquid-glass p-6 sm:p-8 mb-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-        <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono mb-2 bg-amber-500/15 border border-amber-500/30 text-amber-300">
-            <Icon.Layers className="w-3.5 h-3.5" />
-            <span>
+      {/* Admin / Lecturer Header Banner */}
+      <div className="card liquid-glass p-6 sm:p-8 mb-6">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+          <div className="max-w-2xl">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono mb-2 bg-amber-500/15 border border-amber-500/30 text-amber-300">
+              <Icon.Layers className="w-3.5 h-3.5" />
+              <span>
+                {isLecturer
+                  ? 'Faculty Lecturer • My Authored Modules'
+                  : 'System Administrator • University-Wide Access (All Quizzes)'}
+              </span>
+            </div>
+            <h1 className="font-display text-3xl font-bold text-white mb-2">
+              {isLecturer ? 'Lecturer Assessment Hub' : 'System Administration Portal'}
+            </h1>
+            <p className="text-sm text-slate-400 font-sans">
               {isLecturer
-                ? 'Faculty Lecturer • My Authored Modules'
-                : 'System Administrator • University-Wide Access (All Quizzes)'}
-            </span>
+                ? `Welcome ${currentUser?.name || 'Lecturer'}. You are managing your own authored examination modules (${accessibleQuizzes.length} modules).`
+                : `Welcome Administrator. You have university-wide oversight of all ${quizzes.length} examination modules authored across faculty.`}
+            </p>
           </div>
-          <h1 className="font-display text-3xl font-bold text-white mb-2">
-            {isLecturer ? 'Lecturer Assessment Hub' : 'System Administration Portal'}
-          </h1>
-          <p className="text-sm text-slate-400 font-sans">
-            {isLecturer
-              ? `Welcome ${currentUser?.name || 'Lecturer'}. You are managing your own authored examination modules (${accessibleQuizzes.length} modules).`
-              : `Welcome Administrator. You have university-wide oversight of all ${quizzes.length} examination modules authored across faculty.`}
-          </p>
-        </div>
 
-        {/* Tab Switcher */}
-        <div className="flex items-center gap-2 bg-slate-900/80 p-1.5 rounded-xl border border-white/10 flex-wrap">
+          {/* Quick Stat Pill */}
+          <div className="flex items-center gap-3.5 bg-white/[0.04] border border-white/10 px-4 py-3 rounded-2xl shrink-0">
+            <div className="w-10 h-10 rounded-xl gradient-violet flex items-center justify-center text-white shadow-md">
+              <Icon.BookOpen className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="text-[10px] font-mono text-slate-400 uppercase tracking-wider">
+                {isLecturer ? 'Authored Modules' : 'University Registry'}
+              </div>
+              <div className="text-base font-bold font-mono text-white">
+                {accessibleQuizzes.length}{' '}
+                <span className="text-xs text-slate-400 font-normal">Active Quizzes</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Modern Control & Navigation Bar */}
+      <div className="card liquid-glass p-3 mb-6 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 border border-white/10">
+        {/* Navigation Tabs (Single clean row, no awkward wrapping) */}
+        <div className="flex items-center gap-2 bg-slate-900/80 p-1.5 rounded-xl border border-white/10 overflow-x-auto">
           <button
             onClick={() => setActiveTab('list')}
-            className={`px-4 py-2 rounded-lg text-xs font-medium transition-all flex items-center gap-2 ${
+            className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all flex items-center gap-2 whitespace-nowrap shrink-0 ${
               activeTab === 'list'
-                ? 'bg-violet-600 text-white shadow-md'
-                : 'text-slate-400 hover:text-white'
+                ? 'bg-violet-600 text-white shadow-md shadow-violet-600/30'
+                : 'text-slate-400 hover:text-white hover:bg-white/5'
             }`}
           >
-            <Icon.BookOpen className="w-3.5 h-3.5" />
+            <Icon.BookOpen className="w-3.5 h-3.5 text-violet-300" />
             <span>
               {isLecturer
                 ? `My Quizzes (${accessibleQuizzes.length})`
                 : `All System Quizzes (${quizzes.length})`}
             </span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('create')}
-            className={`px-4 py-2 rounded-lg text-xs font-medium transition-all flex items-center gap-2 ${
-              activeTab === 'create'
-                ? 'bg-amber-500 text-slate-950 font-semibold shadow-md'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            <Icon.Plus className="w-3.5 h-3.5" />
-            <span>Create New Quiz</span>
           </button>
 
           {isAdmin && (
@@ -393,19 +402,40 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                 setActiveTab('approvals');
                 fetchUsers();
               }}
-              className={`px-4 py-2 rounded-lg text-xs font-medium transition-all flex items-center gap-2 ${
+              className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all flex items-center gap-2 whitespace-nowrap shrink-0 ${
                 activeTab === 'approvals'
-                  ? 'bg-emerald-500 text-slate-950 font-semibold shadow-md'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30'
+                  : 'text-slate-400 hover:text-white hover:bg-white/5'
               }`}
             >
-              <Icon.Shield className="w-3.5 h-3.5" />
+              <Icon.Shield className="w-3.5 h-3.5 text-emerald-400" />
               <span>Staff Approvals</span>
               {pendingCount > 0 && (
-                <span className="bg-rose-500 text-white text-[10px] font-mono px-1.5 py-0.2 rounded-full animate-pulse">
+                <span className="bg-rose-500 text-white text-[10px] font-mono px-1.5 py-0.5 rounded-full animate-pulse ml-0.5 font-bold">
                   {pendingCount}
                 </span>
               )}
+            </button>
+          )}
+        </div>
+
+        {/* Primary Action Button */}
+        <div className="flex items-center justify-end">
+          {activeTab !== 'create' ? (
+            <button
+              onClick={() => setActiveTab('create')}
+              className="btn-primary text-xs py-2.5 px-5 w-full sm:w-auto glow-violet flex items-center justify-center gap-2 font-semibold transition-all"
+            >
+              <Icon.Plus className="w-4 h-4" />
+              <span>Create New Quiz</span>
+            </button>
+          ) : (
+            <button
+              onClick={() => setActiveTab('list')}
+              className="btn-secondary text-xs py-2.5 px-5 w-full sm:w-auto flex items-center justify-center gap-2 font-medium transition-all"
+            >
+              <Icon.BookOpen className="w-4 h-4 text-violet-400" />
+              <span>Back to Quizzes List</span>
             </button>
           )}
         </div>
